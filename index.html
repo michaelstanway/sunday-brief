@@ -3,47 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex, nofollow">
 <title>Sunday Brief, 27 Sep</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: one reading column (~66ch). Ranked opener, three themed parts, then an interactive quiz. */
 :root {
-  --bg: #f5f6f8;
-  --paper: #ffffff;
-  --ink: #161a21;
-  --muted: #5a616e;
-  --rule: #dde1e7;
-  --accent: #0d6a6a;
-  --accent-soft: #e3f0ef;
-  --good: #1f7a3a;
-  --good-soft: #e3f3e7;
-  --bad: #a63a2b;
-  --bad-soft: #f8e6e2;
-  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --bg: #edf1ea;
+  --paper: #f8faf5;
+  --ink: #18261d;
+  --muted: #55665b;
+  --rule: #cfd9cc;
+  --accent: #2e5a3e;
+  --accent-soft: #dfeadf;
+  --brass: #8a6d34;
+  --good: #2e6b3f;
+  --good-soft: #dcecdf;
+  --bad: #9a4a32;
+  --bad-soft: #f3e3dc;
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
   --body: "Source Serif 4", Georgia, "Times New Roman", serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1216; --paper: #161a20; --ink: #e6e9ee; --muted: #9aa3b0; --rule: #2a3039;
-    --accent: #5cc4bb; --accent-soft: #17302e; --good: #6fd08a; --good-soft: #15301d;
-    --bad: #f08a78; --bad-soft: #3a1c17; color-scheme: dark;
+    --bg: #0e1611; --paper: #15201a; --ink: #e3eae2; --muted: #9db0a2; --rule: #26352b;
+    --accent: #86c597; --accent-soft: #1b3324; --brass: #c8a964; --good: #86c597; --good-soft: #17301f;
+    --bad: #e59a82; --bad-soft: #3a211a; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f1216; --paper: #161a20; --ink: #e6e9ee; --muted: #9aa3b0; --rule: #2a3039;
-  --accent: #5cc4bb; --accent-soft: #17302e; --good: #6fd08a; --good-soft: #15301d;
-  --bad: #f08a78; --bad-soft: #3a1c17; color-scheme: dark;
+  --bg: #0e1611; --paper: #15201a; --ink: #e3eae2; --muted: #9db0a2; --rule: #26352b;
+  --accent: #86c597; --accent-soft: #1b3324; --brass: #c8a964; --good: #86c597; --good-soft: #17301f;
+  --bad: #e59a82; --bad-soft: #3a211a; color-scheme: dark;
 }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.62; }
 .wrap { max-width: 44rem; margin: 0 auto; padding-inline: 18px; padding-block: 40px 72px; }
-header { display: grid; gap: 10px; padding-bottom: 22px; border-bottom: 1px solid var(--rule); }
-.kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
-h1 { font-family: var(--display); font-weight: 700; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.04; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
-h2 { font-family: var(--display); font-weight: 700; font-size: 1.6rem; margin: 0; text-wrap: balance; }
+header { display: grid; gap: 12px; padding-bottom: 26px; border-bottom: 3px double var(--rule); }
+.kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--brass); }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.04; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 1.6rem; margin: 0; text-wrap: balance; }
 h3 { font-family: var(--display); font-weight: 600; font-size: 1.18rem; margin: 0; text-wrap: balance; }
 .meta { color: var(--muted); font-size: 15px; margin: 0; }
 .toc { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--mono); font-size: 12px; }
@@ -59,7 +60,8 @@ h3 { font-family: var(--display); font-weight: 600; font-size: 1.18rem; margin: 
 .box ol, .box ul { margin: 0; padding-left: 1.3em; display: grid; gap: 9px; }
 .box li::marker { font-family: var(--mono); color: var(--accent); }
 ul.quick { margin: 0; padding-left: 1.1em; display: grid; gap: 7px; }
-.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; border-radius: 4px; padding: 1px 6px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; border-radius: 999px; padding: 1px 8px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.partlabel { color: var(--brass) !important; }
 strong { font-weight: 600; }
 a { color: var(--accent); text-underline-offset: 2px; }
 a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -107,7 +109,7 @@ footer ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
       <a href="#econ">The Economist's picks · 6 min</a>
       <a href="#sci">Science · 6 min</a>
       <a href="#space">Space and EO · 2 min</a>
-      <a href="#quiz">Quiz · 5 min</a>
+      <a href="#quiz">Quiz · 8 min</a>
     </nav>
   </header>
 
@@ -307,9 +309,9 @@ footer ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
   <!-- ===================== QUIZ ===================== -->
   <section class="part" id="quiz" aria-labelledby="h-quiz">
     <div class="parthead">
-      <span class="partlabel">Quiz · about 5 minutes</span>
-      <h2 id="h-quiz">Ten questions</h2>
-      <p class="meta">Answer from memory before scrolling back. Recall is what makes the reading stick.</p>
+      <span class="partlabel">Quiz · about 8 minutes</span>
+      <h2 id="h-quiz">Twenty questions</h2>
+      <p class="meta">Answer from memory before scrolling back. Recall is what makes the reading stick. When you finish, enter your score out of 20 on the Weekly News card in Life Cards.</p>
     </div>
     <div class="score" role="status" aria-live="polite">
       <span id="scoreText">Score: 0 / 0</span>
@@ -347,7 +349,17 @@ footer ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
     { q: "What does the holographic principle propose?", o: ["The universe is a computer simulation", "Everything in a region can be described by information on its surface", "Light is a hologram", "Black holes don't exist"], a: 1, e: "A 3D world might be fully encoded in 2D, as black-hole maths and AdS/CFT suggest." },
     { q: "In the BMJ review, vitamin D on its own…", o: ["Cut fractures by a third", "Had no effect on fractures", "Reduced falls only", "Increased fractures"], a: 1, e: "No effect, with high certainty. Vitamin D plus calcium showed a small, below-threshold benefit." },
     { q: "Roughly what share of people on GLP-1 drugs lose little or no weight?", o: ["1–2%", "10–15%", "30–40%", "Half"], a: 1, e: "10–15%, and scientists don't yet know why." },
-    { q: "Where will Planet launch its first German-built satellite?", o: ["Kourou, French Guiana", "Andøya, Norway, on Isar's Spectrum", "Vandenberg, on a Falcon 9", "Sutherland, Scotland"], a: 1, e: "On Isar Aerospace's Spectrum rocket from Norway, in early 2027." }
+    { q: "Where will Planet launch its first German-built satellite?", o: ["Kourou, French Guiana", "Andøya, Norway, on Isar's Spectrum", "Vandenberg, on a Falcon 9", "Sutherland, Scotland"], a: 1, e: "On Isar Aerospace's Spectrum rocket from Norway, in early 2027." },
+    { q: "Which three airports did the TPLF seize?", o: ["Addis Ababa, Gondar, Bahir Dar", "Mekelle, Axum and Shire", "Dire Dawa, Jijiga, Semera", "Lalibela, Dessie, Kombolcha"], a: 1, e: "All in Tigray; flights were suspended and the African Union said it broke the Pretoria deal." },
+    { q: "What does the new Greenland deal bar?", o: ["All US troops", "Non-NATO military installations", "Danish sovereignty", "Mining"], a: 1, e: "Non-NATO countries can't set up military sites, and sensitive investment is limited to NATO and EU countries." },
+    { q: "What did the Fed do on 16 September?", o: ["Cut by a quarter point", "Held rates", "Raised by a quarter point", "Raised by half a point"], a: 2, e: "To 3.75–4.00%, its first rise since July 2023, unanimously." },
+    { q: "Who sued Carl Icahn and dozens of hedge funds over the Endeavor buyout?", o: ["Goldman Sachs", "Silver Lake", "Blackstone", "KKR"], a: 1, e: "Silver Lake called them \"opportunistic arbitrageurs\", not genuine dissenters." },
+    { q: "What did Morgan Stanley accidentally email out?", o: ["Its bonus pool", "A list of 100+ Asian deals it is pitching", "Client passwords", "Its trading strategy"], a: 1, e: "A recall email came too late, and rival banks started calling the companies on the list." },
+    { q: "What share of Tata Sons do Tata Trusts own?", o: ["About 18%", "About 40%", "About 66%", "100%"], a: 2, e: "About 66%; the Shapoorji Pallonji family owns 18.4%." },
+    { q: "Which party came first in Berlin's state election?", o: ["The CDU", "Die Linke", "The Greens", "The SPD"], a: 1, e: "Die Linke came first in Berlin with 25.7%." },
+    { q: "What did Anthropic's AI agents find in giant viruses?", o: ["A new antibiotic", "A CRISPR-like DNA pattern", "A cancer gene", "Nothing"], a: 1, e: "About 950 agents flagged repeating DNA resembling CRISPR. Its function is unknown." },
+    { q: "Why do Earth's days change length by milliseconds?", o: ["The Moon drifting away", "A tug-of-war between forces linked to Earth's core", "Melting ice caps", "Solar wind"], a: 1, e: "Gravity pulls one way, magnetic and frictional forces the other; gravity wins, just." },
+    { q: "Where will Planet's new satellite factory be?", o: ["Paris", "Berlin", "Munich", "Toulouse"], a: 1, e: "A 5,700 m² facility in Berlin, reportedly able to build up to 60 satellites a year." }
   ];
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
   function build() {
