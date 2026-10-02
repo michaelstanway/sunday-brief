@@ -30,6 +30,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
@@ -385,6 +386,8 @@ dfn[data-def]:focus-visible { outline: 2px solid var(--forest); }
 .fx-who p { margin: 0 0 4px; }
 .fx-who a { font-family: var(--mono); font-size: 11.5px; }
 .fx-who:not(:has(img)) { grid-template-columns: 1fr; }
+.fx-who.passive { pointer-events: none; }
+.fx-who.passive a { display: none; }
 
 /* ---------- level 3: go deeper ---------- */
 details.deeper { border-top: 1px solid var(--rule); margin-top: 4px; }

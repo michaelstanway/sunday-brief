@@ -447,10 +447,9 @@
     var src = document.getElementById("people");
     if (src) { try { data = JSON.parse(src.textContent); } catch (e) { data = {}; } }
     var card = el("div", { class: "fx-who", role: "dialog", hidden: "" }, document.body);
-    var openFor = null, hideTimer = null;
+    var openFor = null;
     function show(t) {
       var d = data[t.getAttribute("data-who")]; if (!d) return;
-      clearTimeout(hideTimer);
       card.innerHTML = (d.img ? "<img src='" + d.img + "' alt='' loading='lazy'>" : "") +
         "<div><strong>" + d.name + "</strong><span class='fx-who-role'>" + (d.role || "") + "</span><p>" + d.bio + "</p>" +
         (d.url ? "<a href='" + d.url + "' target='_blank' rel='noopener'>Wikipedia ↗</a>" : "") + "</div>";
@@ -459,19 +458,28 @@
       card.style.left = Math.max(12, Math.min(window.innerWidth - 332, r.left + window.scrollX)) + "px";
       card.style.top = (r.bottom + window.scrollY + 8) + "px";
     }
-    function hideSoon() { hideTimer = setTimeout(function () { card.hidden = true; openFor = null; }, 250); }
+    function hide() { card.hidden = true; openFor = null; }
+    // Mouse: show only while the pointer is on the name and hide the moment
+    // it leaves; the card never takes the pointer (CSS .passive), so it can't
+    // block text. Touch: tap a name to show, tap anywhere else to close.
     document.querySelectorAll(".who[data-who]").forEach(function (t) {
-      if (!data[t.getAttribute("data-who")]) return;
-      t.setAttribute("tabindex", "0"); t.setAttribute("role", "button");
-      t.addEventListener("mouseenter", function () { show(t); });
-      t.addEventListener("mouseleave", hideSoon);
-      t.addEventListener("focus", function () { show(t); });
-      t.addEventListener("click", function (ev) { ev.stopPropagation(); if (openFor === t && !card.hidden) { card.hidden = true; openFor = null; } else show(t); });
+      var d = data[t.getAttribute("data-who")];
+      if (!d) return;
+      t.setAttribute("tabindex", "0");
+      t.addEventListener("pointerenter", function (ev) { if (ev.pointerType === "mouse") { card.classList.add("passive"); show(t); } });
+      t.addEventListener("pointerleave", function (ev) { if (ev.pointerType === "mouse") hide(); });
+      t.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        if (card.classList.contains("passive") && openFor === t) { hide(); if (d.url) window.open(d.url, "_blank", "noopener"); return; }
+        card.classList.remove("passive");
+        if (openFor === t && !card.hidden) hide(); else show(t);
+      });
+      t.addEventListener("keydown", function (ev) { if (ev.key === "Enter") show(t); if (ev.key === "Escape") hide(); });
+      t.addEventListener("blur", function () { if (card.classList.contains("passive")) hide(); });
     });
-    card.addEventListener("mouseenter", function () { clearTimeout(hideTimer); });
-    card.addEventListener("mouseleave", hideSoon);
     card.addEventListener("click", function (ev) { ev.stopPropagation(); });
-    document.addEventListener("click", function () { card.hidden = true; openFor = null; });
+    document.addEventListener("click", hide);
+    window.addEventListener("scroll", function () { if (card.classList.contains("passive")) hide(); }, { passive: true });
   }
 
   function init() {
