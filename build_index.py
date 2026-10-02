@@ -15,6 +15,8 @@ import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parent
+# Bump-free cache busting: the stylesheet's own modification time.
+ASSET_VERSION = int((pathlib.Path(__file__).resolve().parent / "assets" / "brief.css").stat().st_mtime)
 editions = sorted((ROOT / "editions").glob("????-??-??.html"), reverse=True)
 
 
@@ -79,7 +81,7 @@ page = f"""<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/brief.css">
+<link rel="stylesheet" href="assets/brief.css?v={ASSET_VERSION}">
 </head>
 <body>
 <div class="masthead">
