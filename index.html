@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Sunday Brief, 27 Sep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column (~66ch). Ranked opener, three themed parts, then an interactive quiz. */
+:root {
+  --bg: #f5f6f8;
+  --paper: #ffffff;
+  --ink: #161a21;
+  --muted: #5a616e;
+  --rule: #dde1e7;
+  --accent: #0d6a6a;
+  --accent-soft: #e3f0ef;
+  --good: #1f7a3a;
+  --good-soft: #e3f3e7;
+  --bad: #a63a2b;
+  --bad-soft: #f8e6e2;
+  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216; --paper: #161a20; --ink: #e6e9ee; --muted: #9aa3b0; --rule: #2a3039;
+    --accent: #5cc4bb; --accent-soft: #17302e; --good: #6fd08a; --good-soft: #15301d;
+    --bad: #f08a78; --bad-soft: #3a1c17; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216; --paper: #161a20; --ink: #e6e9ee; --muted: #9aa3b0; --rule: #2a3039;
+  --accent: #5cc4bb; --accent-soft: #17302e; --good: #6fd08a; --good-soft: #15301d;
+  --bad: #f08a78; --bad-soft: #3a1c17; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.62; }
+.wrap { max-width: 44rem; margin: 0 auto; padding-inline: 18px; padding-block: 40px 72px; }
+header { display: grid; gap: 10px; padding-bottom: 22px; border-bottom: 1px solid var(--rule); }
+.kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.04; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 1.6rem; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--display); font-weight: 600; font-size: 1.18rem; margin: 0; text-wrap: balance; }
+.meta { color: var(--muted); font-size: 15px; margin: 0; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--mono); font-size: 12px; }
+.toc a { color: var(--accent); text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+.part { display: grid; gap: 22px; padding-block: 34px; border-bottom: 1px solid var(--rule); }
+.parthead { display: grid; gap: 4px; }
+.partlabel { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.story { display: grid; gap: 8px; }
+.story p { margin: 0; }
+.angle { border-left: 3px solid var(--accent); padding-left: 12px; font-style: italic; color: var(--muted); }
+.box { background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 20px 22px; display: grid; gap: 12px; }
+.box ol, .box ul { margin: 0; padding-left: 1.3em; display: grid; gap: 9px; }
+.box li::marker { font-family: var(--mono); color: var(--accent); }
+ul.quick { margin: 0; padding-left: 1.1em; display: grid; gap: 7px; }
+.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; border-radius: 4px; padding: 1px 6px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+strong { font-weight: 600; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Quiz */
+.quiz { display: grid; gap: 16px; }
+.q { background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 16px 18px; display: grid; gap: 10px; }
+.q .qt { font-weight: 600; margin: 0; }
+.opts { display: grid; gap: 8px; }
+.opt { text-align: left; font: inherit; font-size: 15.5px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; padding: 9px 12px; cursor: pointer; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt.right { background: var(--good-soft); border-color: var(--good); }
+.opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+.explain { font-size: 15px; color: var(--muted); margin: 0; }
+.score { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; gap: 12px; font-family: var(--mono); font-size: 13px; }
+.btn { font: inherit; font-family: var(--mono); font-size: 13px; background: var(--accent); color: var(--paper); border: 0; border-radius: 5px; padding: 8px 14px; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.hl { display: grid; gap: 8px; }
+.hlrow { display: grid; grid-template-columns: 1fr; gap: 6px; padding-block: 8px; border-top: 1px solid var(--rule); }
+.hlrow:first-child { border-top: 0; }
+.hlrow select { font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; padding: 7px 8px; max-width: 100%; }
+.hlrow.right select { border-color: var(--good); background: var(--good-soft); }
+.hlrow.wrong select { border-color: var(--bad); background: var(--bad-soft); }
+.hlans { font-size: 14px; color: var(--muted); }
+.hilo { display: flex; flex-wrap: wrap; gap: 8px; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+footer { padding-top: 26px; font-size: 14px; color: var(--muted); display: grid; gap: 10px; }
+footer ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+@media (prefers-reduced-motion: no-preference) { .opt { transition: background .15s, border-color .15s; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Sunday Brief · 27 September 2026 · covers Sun 20 – Sat 26 Sep</div>
+    <h1>Your week, in thirty minutes</h1>
+    <p class="meta">Eight stories explained properly, everything else in a line. Picked from The Economist (issue of 26 Sep), the Financial Times, Money Stuff, Quanta, Nature, SpaceNews and Payload, and Wikipedia's Current events, then researched through Reuters, AP, the BBC, central banks and the original papers. Only facts published by Sunday morning are used. The Economist's and Money Stuff's own arguments are labelled as theirs.</p>
+    <nav class="toc" aria-label="Sections">
+      <a href="#top">In 90 seconds</a>
+      <a href="#world">The world · 6 min</a>
+      <a href="#money">Markets and money · 5 min</a>
+      <a href="#econ">The Economist's picks · 6 min</a>
+      <a href="#sci">Science · 6 min</a>
+      <a href="#space">Space and EO · 2 min</a>
+      <a href="#quiz">Quiz · 5 min</a>
+    </nav>
+  </header>
+
+  <!-- ===================== TOP ===================== -->
+  <section class="part" id="top" aria-labelledby="h-top">
+    <div class="box">
+      <h2 id="h-top">The week in 90 seconds</h2>
+      <ol>
+        <li><strong>Borrowing costs hit a 19-year high.</strong> America's 10-year Treasury yield closed the week near 5.2%, its highest since 2007, a week after the Fed's first rate rise since 2023. It's the story every source touched.</li>
+        <li><strong>Iran offered to reopen the Strait of Hormuz; Trump said no.</strong> The plan would reopen the strait seven days after a deal. Trump called it "unacceptable" and renamed the waterway the "Trump Strait". EU diesel hit a record €2.23 a litre.</li>
+        <li><strong>Russia voted and Moscow was hit.</strong> Putin's party won a record 355 of 450 parliamentary seats while Ukraine launched its largest-ever drone attack on the capital.</li>
+        <li><strong>Germany's centre cracked.</strong> The far-right AfD won Mecklenburg-Vorpommern and Merz's CDU fell out of the state parliament entirely.</li>
+        <li><strong>Brazil votes next Sunday</strong> in a dead heat between Lula, 80, and Flávio Bolsonaro, son of a jailed ex-president.</li>
+        <li><strong>Planet will build satellites in Berlin,</strong> and the EU says it needs six times more launches by 2034. Europe is getting serious about its own space capacity.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== WORLD ===================== -->
+  <section class="part" id="world" aria-labelledby="h-world">
+    <div class="parthead">
+      <span class="partlabel">The world · about 6 minutes</span>
+      <h2 id="h-world">The world</h2>
+    </div>
+
+    <div class="story">
+      <h3>The Iran war: a deal offered, and refused</h3>
+      <p><strong>How we got here.</strong> The war began on 28 February, when the US and Israel struck Iran and killed its supreme leader. Iran fired back and shut the Strait of Hormuz, the narrow exit from the Gulf that normally carries about a fifth of the world's oil. A ceasefire in April led to failed talks in Islamabad, and America began blockading Iran's ports on 13 April. A second negotiating window in June collapsed on 8 July, and the blockade has been back in force since 14 July. Before the war more than 100 ships a day used the strait; in mid-September it was around 14.</p>
+      <p><strong>This week.</strong> On Tuesday, Iran's foreign minister Abbas Araghchi spent about three hours with Trump's envoys Steve Witkoff and Jared Kushner at the UN in New York, through Qatari mediators. It was their first contact since June, and Iranian hard-liners were angry it happened at all. Iran then put forward a seven-day plan: reopen Hormuz a week after a deal, in exchange for ending the blockade, unfreezing about $12bn of assets, lifting oil sanctions and ending fighting on all fronts. Oil fell on the hope; US crude dropped nearly 8% on the week. On Saturday Trump rejected it as "unacceptable", saying Iran wanted a deal "because they're losing so badly", and posted an image renaming the waterway the "Trump Strait". The Wall Street Journal reported he privately expects to resume bombing after America's midterm elections on 3 November.</p>
+      <p><strong>The cost.</strong> Iran's economy shrank 10.1% between March and June, and new US sanctions grounded its airlines internationally from 23 September. Europe pays at the pump: diesel averaged a record €2.23 a litre this week, up about 40% since February, because the Gulf supplied about 41% of Europe's diesel imports and Ukrainian drones have also cut Russian refining.</p>
+      <p class="angle">What to watch: Iran's formal reply through mediators, and whether "lift the blockade first" and "open the strait first" can be sequenced before 3 November.</p>
+    </div>
+
+    <div class="story">
+      <h3>Russia: a record election win, and Moscow under attack</h3>
+      <p><strong>The vote.</strong> In Russia's first parliamentary election since the 2022 invasion (18 to 20 September), Putin's United Russia won about 58% of the party-list vote and a record 355 of 450 seats, beating its 2016 high of 343. Yabloko, the only openly anti-war party, was kept off the ballot, and Finnish analysts called the official 59% turnout "implausibly high".</p>
+      <p><strong>The attack.</strong> On the final day of voting, Ukraine launched what Moscow's mayor called the largest attack on the capital ever: more than 1,600 drones intercepted over Russia, about 450 of them aimed at Moscow. Three people died, more than 150 flights were cancelled or delayed, and the Moscow refinery, which supplies about 40% of the city's fuel, stopped processing after both its distillation units caught fire. The mayor said it was "clearly planned with the aim of disrupting the elections". Russia answered on Thursday with Zircon and Iskander missiles and 282 drones, killing at least 16 people across Ukraine.</p>
+      <p><strong>Testing Europe.</strong> On Wednesday a Russian helicopter flew about 300 metres into Polish airspace for 42 seconds; Poland scrambled jets and said Russia was "once again testing the readiness of our air defence". It follows a summer of what The Economist calls "grey-zone" attacks (sabotage, arson, and a drone strike at Germany's Leipzig airport), which it argues are "growing more brazen". At the UN, Germany's and Russia's foreign ministers met for the first time since 2022. Lavrov said "nothing new came from that initiative".</p>
+      <p class="angle">What to watch: Russia's promised retaliation for the Moscow strikes, how long the refinery stays down, and winter attacks on Ukraine's power grid. The Institute for the Study of War expects Putin to lean on long-range strikes this winter.</p>
+    </div>
+
+    <div class="story">
+      <h3>Ethiopia: the makings of a second Tigray war</h3>
+      <p><strong>Background.</strong> Ethiopia's 2020–22 war between the federal government and the Tigray People's Liberation Front (TPLF) is estimated to have killed hundreds of thousands. It ended with the Pretoria agreement in November 2022, but the peace frayed: the TPLF split, relations with neighbouring Eritrea soured, and since 2023 the Fano militia has fought the government in the Amhara region.</p>
+      <p><strong>This week.</strong> Last Sunday seven armed groups, including the TPLF, Fano, the Oromo Liberation Army and the Ogaden National Liberation Front, formed a coalition and pledged to "overthrow the Abiy Ahmed-led government" and install a transitional administration. More than 20 government air strikes on Alamata, in southern Tigray, killed 14 civilians and hit two empty schools. The TPLF called it an "open invasion", declared a "defensive war" and seized the airports at Mekelle, Axum and Shire; flights were suspended, and the African Union said this broke the Pretoria deal. Fighting opened on three fronts, and a Tigrayan leader accused Eritrea and Egypt of backing armed groups.</p>
+      <p class="angle">Why it matters: a war across several regions at once, with neighbours drawn in, could be worse than the last one, in a country of about 130 million. One analyst calls the alliance "tactical rather than strategic", so it may not hold together.</p>
+    </div>
+
+    <div class="story">
+      <h3>Also in the world</h3>
+      <ul class="quick">
+        <li><strong>Greenland:</strong> after a year of annexation threats, the US, Denmark and Greenland signed a defence deal at the UN. America gets new bases and overflight rights, non-NATO countries are shut out of military sites and sensitive investment, and Denmark keeps sovereignty.</li>
+        <li><strong>China–US:</strong> during Xi Jinping's state visit, the two agreed tariff cuts on $30bn of goods, a new dialogue on AI with a hotline for "AI incidents", and a two-month extension of their trade truce.</li>
+        <li><strong>Britain:</strong> Prime Minister Andy Burnham, in office since July, sent an RAF tanker to refuel Saudi jets against Houthi attacks and launched a National Centre for Information Defence against AI-driven disinformation.</li>
+        <li><strong>Venezuela:</strong> Trump met acting president Delcy Rodríguez, who took over after US forces captured Nicolás Maduro in January, and more political prisoners were released.</li>
+        <li><strong>Morocco</strong> voted on a 38% turnout. Fatima Ezzahra El Mansouri's party came first, putting her in line to be the country's first woman prime minister.</li>
+        <li><strong>Israel</strong>'s election committee barred the main Arab parties from the coming election.</li>
+        <li><strong>Weather:</strong> a record El Niño has left the Atlantic without a single hurricane this late in the season for the first time since 1914, while the Pacific produced a Category 5.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== MONEY ===================== -->
+  <section class="part" id="money" aria-labelledby="h-money">
+    <div class="parthead">
+      <span class="partlabel">Markets and money · about 5 minutes</span>
+      <h2 id="h-money">Markets and money</h2>
+    </div>
+
+    <div class="story">
+      <h3>The bond market flinched, and house prices are next</h3>
+      <p><strong>What happened.</strong> America's 10-year Treasury yield, the benchmark rate that sets mortgage costs around the world, climbed about 0.19 percentage points this week and closed Friday near 5.2%, its highest since July 2007. A weak auction of five-year government bonds on Wednesday showed buyers demanding more to lend to Washington. Behind it: oil above $100 since March, inflation that won't settle, big government deficits, and a central bank that has started raising rates again.</p>
+      <p><strong>The central banks.</strong> On 16 September the Federal Reserve, now chaired by Kevin Warsh, raised rates by a quarter point to 3.75–4.00%, its first rise since July 2023, unanimously. Sixteen of its eighteen policymakers expect another rise this year, and it now sees inflation at 3.7% this year and back at 2% only in 2029. The ECB raised its deposit rate to 2.50% on 10 September. The Bank of England held at 3.75%, but three of nine members wanted a rise, and Governor Andrew Bailey warned "the longer this volatility persists… the more likely it is we will need to raise Bank rate." Stocks shrugged it off: the S&P 500 still rose 1.2% on the week to 7,743, and Meta jumped about 13% around its smart-glasses launch.</p>
+      <p><strong>Why it matters for houses.</strong> The Economist's leader this week asks whether house prices can survive. <span class="angle" style="display:inline;border:0;padding:0">They survived the last rate rise, it argues, but this time the supports are gone, with only "crumbs of comfort".</span> Those supports were Americans locked into 3–4% fixed mortgages who didn't sell, and Britons on fixed deals that reset slowly. Now America's 30-year mortgage rate is back above 7%, there are 4.9 months of homes for sale, the most in over a decade, and Britain's typical two-year fix is around 5.7%, with UK prices already slipping 0.4% on the year. The comfort: US prices are still up 1.6%, and many owners have large equity cushions.</p>
+      <p class="angle">What to watch: whether the 10-year yield holds above 5%, the Bank of England's next decision on 5 November, and whether the Fed hikes again. For anyone with a UK fixed-rate mortgage ending soon, this is the week remortgaging got more expensive.</p>
+      <div class="box" style="gap:6px">
+        <p class="partlabel" style="margin:0">Friday's closing numbers</p>
+        <p class="num" style="margin:0;font-size:14.5px">US 10-yr yield ~5.2% · S&amp;P 500 7,743 (+1.2% wk) · Brent ~$105 · Gold $4,266/oz · Bitcoin ~$84,000 · EU diesel €2.23/litre</p>
+      </div>
+    </div>
+
+    <div class="story">
+      <h3>From Money Stuff this week</h3>
+      <ul class="quick">
+        <li><strong>"Who Cares If a Merger Is Fair?"</strong> Private equity firm Silver Lake sued Carl Icahn and dozens of hedge funds that bought into Endeavor <em>after</em> Silver Lake agreed to take it private at $27.50 a share, and are now asking a court to value the shares higher. Silver Lake calls them "opportunistic arbitrageurs", not genuine dissenters. About $4bn of shares are involved, reportedly Delaware's largest appraisal fight ever.</li>
+        <li><strong>"Kalshi Levers the Predictions."</strong> The prediction market Kalshi asked US regulators to let big traders bet on event contracts with borrowed money (margin), instead of putting up the full stake. Sports contracts are excluded; the earliest it could start is 9 November.</li>
+        <li><strong>"Morgan Stanley Leaked Some Deals."</strong> A Morgan Stanley staffer emailed out a file listing more than 100 Asian deals the bank is pitching, including IPO candidates and their backers. A recall email came too late, a blurred copy surfaced on Instagram, and rival banks started calling the companies on the list.</li>
+        <li><strong>From the FT's Lex column:</strong> "Big dreams and tiny revenue are new norm for AI IPOs", with Anthropic's expected listing the obvious example.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== ECONOMIST ===================== -->
+  <section class="part" id="econ" aria-labelledby="h-econ">
+    <div class="parthead">
+      <span class="partlabel">The Economist's picks · about 6 minutes</span>
+      <h2 id="h-econ">The Economist's picks</h2>
+      <p class="meta">Two of this week's cover stories explained, then the rest of the issue in a line each. The italic lines are The Economist's own argument, from its headlines.</p>
+    </div>
+
+    <div class="story">
+      <h3>Brazil: "a vengeful nepo-baby or a doddering leftie"</h3>
+      <p class="angle">The Economist: Brazil is turning its back on the future, whichever of two unappealing candidates wins.</p>
+      <p><strong>The candidates.</strong> President Luiz Inácio Lula da Silva, 80, is seeking a fourth term. His challenger is Senator Flávio Bolsonaro, 44, eldest son of former president Jair Bolsonaro, who is in prison serving 27 years for a coup plot and endorsed Flávio last December. The first round is next Sunday, 4 October, and a runoff on 25 October is likely.</p>
+      <p><strong>The polls.</strong> It's a coin toss. Datafolha has Lula ahead 40% to 36% in the first round and 47% to 45% in a runoff; Quaest has Flávio a point ahead in a runoff. Evangelicals favour Flávio about two to one. For the first time this term, more Brazilians disapprove of Lula (51%) than approve.</p>
+      <p><strong>The issues.</strong> Crime is voters' top worry, with gangs like Comando Vermelho and the PCC, and Flávio wants to lower the age of criminal responsibility to 16. Corruption comes next: the collapse of Banco Master, described as Brazil's biggest banking fraud, led to its owner's arrest, and a Supreme Court justice is investigating whether about $10m–12m of its money funded a biopic of Jair Bolsonaro. Flávio's answer: "Investigate everything and everyone." Government debt is about 83% of GDP, and US tariffs have let Lula campaign on national "sovereignty". On Thursday Lula banned online betting by decree; Brazilians stake about R$60bn a year, three-quarters of voters support a ban, and Flávio called it "populist, hypocritical and politically motivated".</p>
+      <p class="angle">What to watch: whether either candidate clears 50% next Sunday (unlikely), and where voters for the minor candidates go in the runoff on 25 October.</p>
+    </div>
+
+    <div class="story">
+      <h3>Friedrich Merz, the zombie chancellor</h3>
+      <p class="angle">The Economist: Merz cannot recover, but no one wants to finish him off, yet.</p>
+      <p><strong>The results.</strong> In Mecklenburg-Vorpommern the AfD won 38.2% and came first. Merz's CDU got 4.9%, below the 5% threshold, so it won no seats at all, the first time since reunification it's been shut out of a state parliament. In Berlin the hard-left Die Linke came first with 25.7%, with the CDU second and the AfD third. Two weeks earlier the AfD took 43.8% in Saxony-Anhalt. Other parties refuse to govern with the AfD, so both states will likely end up with left-leaning coalitions.</p>
+      <p><strong>The fallout.</strong> "We cannot sugar-coat the result. It is a disaster," Merz said, while insisting "the reforms have to come." His coalition partner, the SPD, now wants to reopen his plans on pensions, care and the 2027 budget. Its leader Lars Klingbeil said that if people see reforms as a threat, "it is not just our communication that needs to improve, but… the substance of the reform itself." Nationally the AfD polls about 28–29% to the CDU's 20%, and in one poll only 14% of Germans think Merz is the right chancellor. The Economist sees a Europe-wide pattern: populists on the right and the left gaining as the centre weakens.</p>
+      <p class="angle">What to watch: coalition talks in both states, whether the SPD forces a rewrite of the 2027 budget, and whether CDU figures like Hendrik Wüst or Markus Söder start openly positioning to replace Merz.</p>
+    </div>
+
+    <div class="story">
+      <h3>The rest of the issue</h3>
+      <ul class="quick">
+        <li><strong>"When America walks away":</strong> decades of US dominance in the Middle East are ending. Iraq has set 30 September as the "fixed and final" date for the US-led coalition to leave.</li>
+        <li><strong>"Tata goes to war with itself":</strong> India's central bank says Tata Sons must list on the stock market. Its board voted 4–1 to move towards that and reappoint chairman N. Chandrasekaran; Noel Tata, whose charitable trusts own about 66% of the group, voted against and calls it void. It's heading to court.</li>
+        <li><strong>"German unions are fighting to defend the 35-hour week":</strong> IG Metall wants 5% pay rises while Mercedes threatens to close two plants unless it cuts €800m of labour costs. The Economist's view: the fight won't stop the car industry's decline.</li>
+        <li><strong>"Tanker rates are on the crest of a wave":</strong> with Hormuz mostly shut, a supertanker on the Gulf-to-China run earned about $723,000 a day, against $80,000 a year ago.</li>
+        <li><strong>"How tech firms hope to beat the backlash against 'pervert glasses'":</strong> after covert filming went viral, Meta launched a $349 pair of smart glasses with no camera at all.</li>
+        <li><strong>"Don't let AI kill the author":</strong> about 15% of British ministerial statements now contain AI-written passages, up from 3.5% in 2022, and research shows AI makes writing more uniform.</li>
+        <li><strong>"Data centres are straining the insurance market":</strong> about $10bn of new premiums this year, more risk than insurers can comfortably carry.</li>
+        <li><strong>Vitamin D and surgery:</strong> see Science below; both are worth your attention.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== SCIENCE ===================== -->
+  <section class="part" id="sci" aria-labelledby="h-sci">
+    <div class="parthead">
+      <span class="partlabel">Science · about 6 minutes</span>
+      <h2 id="h-sci">Science</h2>
+    </div>
+
+    <div class="story">
+      <h3>Is the universe a hologram? <span class="tag">Quanta</span></h3>
+      <p>This week's Quanta piece, by Charlie Wood, is an essay rather than news: a guide to one of the strangest ideas in physics and what it might mean for reality.</p>
+      <p><strong>The idea.</strong> Draw a box around any region of space. The holographic principle says everything inside could, in principle, be described completely by information on the box's surface. That means a three-dimensional world might be fully encoded in two dimensions, the way a flat hologram stores a 3D image.</p>
+      <p><strong>Why physicists take it seriously.</strong> First, gravity is unusual: mass is always positive, so the way a region's surface bends space-time can pin down what's inside, in a way electric charge can't. Second, in the 1970s Jacob Bekenstein and Stephen Hawking found that the information a black hole holds grows with its surface area, not its volume. Since any region could in principle collapse into a black hole, every region may follow the same rule. Third, in the late 1990s physicists found an exact mathematical match: a universe with gravity, shaped like a closed "snow globe", is equivalent to a theory with no gravity at all living on its boundary. That result, called AdS/CFT, is among the most-cited ideas in modern theoretical physics. Leonard Susskind remembers thinking the holographic idea "was a little bit crazy, but I thought it was the least crazy of all the possibilities."</p>
+      <p><strong>The catch.</strong> Our universe isn't a snow globe. It's expanding and has no obvious boundary, so nobody knows whether the exact maths applies to us. Some physicists read the black-hole results more mundanely, as ordinary quantum entanglement. Vijay Balasubramanian lays out three options: the surface description is the real one, the 3D world with gravity is real, or neither is and both are drafts of a theory we don't have yet. As Charles Cao puts it: "We are fooled into thinking that there is more stuff in the universe than there actually is." Wood's own conclusion is that physicists are "nowhere close" to a working theory for our universe, let alone evidence.</p>
+    </div>
+
+    <div class="story">
+      <h3>Vitamin D won't protect your bones <span class="tag">you take this</span></h3>
+      <p>The Economist highlighted a big BMJ review (published in May) of 69 trials and about 154,000 adults. Vitamin D on its own had <strong>no effect on fractures</strong>, with high certainty. Vitamin D plus calcium cut fractures by about 9%, below the threshold the authors had set in advance as meaningful. They conclude the evidence does "not support routine supplementation" for fractures and falls, and suggest balance and strength training instead. It doesn't cover diagnosed deficiency, and NHS advice to consider 10 micrograms a day from October to March still stands.</p>
+    </div>
+
+    <div class="story">
+      <h3>Why weight-loss jabs don't work for everyone <span class="tag">Nature</span></h3>
+      <p>Most people on GLP-1 drugs like semaglutide (Ozempic, Wegovy) lose a lot of weight, about a quarter of body weight on average in one study, but 10–15% lose little or none. Daniel Drucker, whose research helped create the drugs, says "we really don't understand that." There are clues: women tend to lose more than men, and two studies found post-menopausal women on hormone therapy did better, which hints that oestrogen matters. Data on genetic differences is still thin, and the Endocrine Society calls truly personalised obesity treatment "largely aspirational".</p>
+    </div>
+
+    <div class="story">
+      <h3>Earth's core is changing the length of your day <span class="tag">Nature</span></h3>
+      <p>Days get longer or shorter by a few thousandths of a second over decades. A study in Nature this week, by Mathieu Dumberry and Huifeng Zhang at the University of Alberta, explains why: a tug-of-war inside the planet. Gravity pulls dense parts of the inner core towards dense parts of the mantle, while magnetic and frictional forces pull the other way. Gravity wins, just. It fits earlier findings that the inner core spun faster than the rest of the planet until about 2010, then slowed.</p>
+    </div>
+
+    <div class="story">
+      <h3>Anthropic's AI found a CRISPR-like system in giant viruses <span class="tag">Nature</span></h3>
+      <p>Anthropic, the company behind Claude, opened a biology lab and released a preprint, not yet peer-reviewed. In it, about 950 AI agents spent 21 hours searching billions of gene sequences and flagged repeating DNA patterns in giant viruses that resemble CRISPR, the bacterial immune system behind gene editing. What the system does is unknown; Anthropic's head of life sciences calls it "a promising lead". A twist: a Copenhagen researcher says his group had studied this system for years and uploaded information about it to Anthropic's models. Anthropic says the model was "not trained on any user transcripts". It's a live test of whether AI can make discoveries, and how to credit them.</p>
+    </div>
+
+    <div class="story">
+      <h3>Also in science</h3>
+      <ul class="quick">
+        <li><strong>Fake surgery works as well as real for some operations:</strong> a 10-year Finnish trial found partial knee-cartilage removal did <em>worse</em> than a sham operation, and shoulder-impingement and some spinal operations have failed against sham too. The Economist argues "millions of operations should be scrapped".</li>
+        <li><strong>The most accurate clock ever,</strong> based on lutetium atoms, and a strange new form of boron (Nature).</li>
+        <li><strong>Reading burned Roman scrolls</strong> from Herculaneum without unrolling them, by tracking lead in the ink (Nature).</li>
+        <li><strong>Quanta</strong> also ran pieces on how virus-like "jumping genes" became partners in evolution, and why biology's maths looks quantum even if biology isn't.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== SPACE ===================== -->
+  <section class="part" id="space" aria-labelledby="h-space">
+    <div class="parthead">
+      <span class="partlabel">Space and EO · about 2 minutes</span>
+      <h2 id="h-space">Space and Earth observation</h2>
+    </div>
+    <div class="story">
+      <ul class="quick">
+        <li><strong>Planet opens a satellite factory in Berlin</strong> (22 Sep). A 5,700 m² facility, reportedly able to build up to 60 satellites a year, with its first German-built Pelican due before year-end and a launch on Isar Aerospace's Spectrum rocket from Norway in early 2027. <em>Why it matters for EO:</em> one of the biggest operators is scaling up its fleet, which means more imagery to get down every day, and it's buying European manufacturing and launch.</li>
+        <li><strong>The EU wants six times more launches by 2034</strong> (23 to 26 Sep). Space commissioner Andrius Kubilius said EU government satellites will rise from about 70 to about 630, needing about 62 launches a year, and Ariane 6 alone would need 14 a year by 2031 against 9 or 10 now. The FT reports the EU is looking at launch sites in Norway, the UK and Canada. <em>Why it matters:</em> launch supply, not just satellites, is now the bottleneck for new European EO constellations.</li>
+        <li><strong>SSC becomes ground-station partner for Airbus's Pléiades Neo</strong> (21 Sep), handling data downlink through stations in Sweden, Canada and Chile, with "latency optimisation", including for the coming 20 cm-class Pléiades Neo Next in 2028. Sharper images mean more data per image, and downlink is being bought as an optimised service.</li>
+        <li><strong>China launched "Supercomputing-1"</strong> (20 Sep), an imaging satellite with an onboard AI computer meant to process EO data in orbit, cutting processing from hours to minutes. Details are not independently confirmed.</li>
+        <li><strong>Starship's 14th flight slipped</strong> to 28 September pending regulatory approval. The Space Force launched another batch of satellites from Vandenberg on 26 September.</li>
+        <li><strong>Earlier in the month:</strong> Vantor (formerly Maxar) ordered a 24-satellite imaging constellation with revisits every 15 minutes, EnduroSat raised $205m, and ESA picked ICEYE- and Leonardo-led teams to design Europe's government EO service. September's European space funding passed €1bn.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section class="part" id="quiz" aria-labelledby="h-quiz">
+    <div class="parthead">
+      <span class="partlabel">Quiz · about 5 minutes</span>
+      <h2 id="h-quiz">Ten questions</h2>
+      <p class="meta">Answer from memory before scrolling back. Recall is what makes the reading stick.</p>
+    </div>
+    <div class="score" role="status" aria-live="polite">
+      <span id="scoreText">Score: 0 / 0</span>
+      <button class="btn ghost" id="resetBtn" type="button">Start again</button>
+    </div>
+    <div id="mcq" class="quiz"></div>
+  </section>
+
+  <footer>
+    <p style="margin:0"><strong>Sources.</strong> Story selection from The Economist (issue of 26 Sep), the FT, Money Stuff, Quanta, Nature, SpaceNews and Payload (headlines via RSS), and Wikipedia's Portal:Current events, 20–26 Sep. FT coverage is limited this week because search tools couldn't reach ft.com. Facts from:</p>
+    <ul>
+      <li><a href="https://www.france24.com/en/middle-east/20260926-trump-reportedly-rejects-iran-s-7-day-plan-to-reopen-strait-of-hormuz">France 24: Trump rejects Iran's plan</a> · <a href="https://www.axios.com/2026/09/22/unga-iran-us-trump-war">Axios: Iran–US talks</a> · <a href="https://politifact.com/article/2026/sep/15/diesel-oil-russia-ukraine-prices/">PolitiFact: why diesel</a> · <a href="https://www.france24.com/en/live-news/20260924-average-eu-diesel-price-hits-record-2-23-euros-a-litre-afp-analysis">France 24: EU diesel record</a></li>
+      <li><a href="https://fiia.fi/en/publication/russias-2026-state-duma-election">FIIA: Duma election</a> · <a href="https://www.aljazeera.com/news/2026/9/20/mass-ukrainian-drone-attack-on-moscow-kills-two-russia-says">Al Jazeera: Moscow attack</a> · <a href="https://kyivindependent.com/russian-attacks-kill-at-least-16-injure-59-across-ukraine-as-kyiv-hit-by-waves-of-drones-ballistic-missiles/">Kyiv Independent</a> · <a href="https://notesfrompoland.com/2026/09/23/russian-military-helicopter-violates-polish-airspace/">Notes from Poland</a></li>
+      <li><a href="https://www.semafor.com/article/09/24/2026/us-treasury-yields-hit-highest-level-since-2007">Semafor: Treasury yields</a> · <a href="https://www.cnbc.com/2026/09/16/fed-rate-decision-september-2026.html">CNBC: Fed decision</a> · <a href="https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/september-2026">Bank of England</a> · <a href="https://www.nar.realtor/newsroom/nar-existing-home-sales-report-shows-2-0-decrease-in-august">NAR: home sales</a></li>
+      <li><a href="https://finance.yahoo.com/markets/stocks/articles/silver-lake-sues-carl-icahn-231025693.html">Silver Lake v Icahn</a> · <a href="https://www.pymnts.com/legal/2026/kalshi-seeks-margin-trading-approval-as-it-courts-institutional-traders/">Kalshi margin request</a> · <a href="https://www.scmp.com/business/banking-finance/article/3368751/morgan-stanley-deal-leak-triggers-rival-poaching-security-warnings-hong-kong-banks">SCMP: Morgan Stanley leak</a></li>
+      <li><a href="https://www.aljazeera.com/news/2026/9/25/brazils-lula-and-flavio-bolsonaro-still-essentially-tied-in-new-poll">Al Jazeera: Brazil polls</a> · <a href="https://www.aljazeera.com/news/2026/9/11/flavio-bolsonaro-faces-corruption-probe-weeks-before-brazil-election">Al Jazeera: Bolsonaro probe</a> · <a href="https://en.wikipedia.org/wiki/2026_Mecklenburg-Vorpommern_state_election">Mecklenburg-Vorpommern result</a> · <a href="https://www.usnews.com/news/world/articles/2026-09-23/german-state-election-losses-risk-snarling-merzs-reform-agenda">Reuters via US News: Merz</a></li>
+      <li><a href="https://www.quantamagazine.org/gravity-seems-holographic-what-does-that-mean-for-reality-20260925/">Quanta: Gravity seems holographic</a> · <a href="https://bmjgroup.com/calcium-and-vitamin-d-supplements-offer-little-to-no-meaningful-benefit-on-fracture-and-fall-prevention/">BMJ: vitamin D</a> · <a href="https://www.nature.com/articles/d41586-026-03020-3">Nature: GLP-1 non-responders</a> · <a href="https://www.nature.com/articles/d41586-026-03018-x">Nature: length of day</a> · <a href="https://www.nature.com/articles/d41586-026-03039-6">Nature: Anthropic biolab</a></li>
+      <li><a href="https://www.satellitetoday.com/manufacturing/2026/09/22/planet-opens-new-berlin-manufacturing-facility-for-pelican-build-out/">Via Satellite: Planet Berlin</a> · <a href="https://www.eunews.it/en/2026/09/23/space-kubilius-the-eu-must-not-be-dependent-on-foreign-rockets-our-future-is-at-stake/">Eunews: Kubilius on launch</a> · <a href="https://sscspace.com/news/ssc-space-and-airbus-expand-cooperation-on-pliades-neo-and-the-new-pliades-neo-next/">SSC: Pléiades Neo</a></li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var score = 0, answered = 0;
+  var scoreEl = document.getElementById("scoreText");
+  function bump(ok) { answered++; if (ok) score++; scoreEl.textContent = "Score: " + score + " / " + answered; }
+  var MCQ = [
+    { q: "America's 10-year Treasury yield hit its highest level since…", o: ["2023", "2015", "2007", "1995"], a: 2, e: "About 5.2%, the highest since July 2007." },
+    { q: "What did Iran's seven-day plan offer?", o: ["To give up nuclear weapons", "To reopen Hormuz seven days after a deal", "A seven-day ceasefire", "To release prisoners within a week"], a: 1, e: "In return for ending the blockade, unfreezing about $12bn and lifting oil sanctions. Trump called it \"unacceptable\"." },
+    { q: "How many of the Duma's 450 seats did United Russia win?", o: ["301", "343", "355", "410"], a: 2, e: "A record 355, beating its 2016 high of 343." },
+    { q: "What happened to Merz's CDU in Mecklenburg-Vorpommern?", o: ["It came first", "It came second", "It won no seats", "It didn't stand"], a: 2, e: "It got 4.9%, below the 5% threshold." },
+    { q: "Who is Lula's main challenger?", o: ["Jair Bolsonaro", "Flávio Bolsonaro", "Romeu Zema", "Ronaldo Caiado"], a: 1, e: "Senator Flávio Bolsonaro, 44, son of the jailed ex-president." },
+    { q: "What did prediction market Kalshi ask regulators for?", o: ["Permission to take sports bets", "Margin, letting traders bet with borrowed money", "A banking licence", "To list on the stock market"], a: 1, e: "Margin on some event contracts for big traders. Sports are excluded." },
+    { q: "What does the holographic principle propose?", o: ["The universe is a computer simulation", "Everything in a region can be described by information on its surface", "Light is a hologram", "Black holes don't exist"], a: 1, e: "A 3D world might be fully encoded in 2D, as black-hole maths and AdS/CFT suggest." },
+    { q: "In the BMJ review, vitamin D on its own…", o: ["Cut fractures by a third", "Had no effect on fractures", "Reduced falls only", "Increased fractures"], a: 1, e: "No effect, with high certainty. Vitamin D plus calcium showed a small, below-threshold benefit." },
+    { q: "Roughly what share of people on GLP-1 drugs lose little or no weight?", o: ["1–2%", "10–15%", "30–40%", "Half"], a: 1, e: "10–15%, and scientists don't yet know why." },
+    { q: "Where will Planet launch its first German-built satellite?", o: ["Kourou, French Guiana", "Andøya, Norway, on Isar's Spectrum", "Vandenberg, on a Falcon 9", "Sutherland, Scotland"], a: 1, e: "On Isar Aerospace's Spectrum rocket from Norway, in early 2027." }
+  ];
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function build() {
+    var root = document.getElementById("mcq"); root.innerHTML = "";
+    MCQ.forEach(function (item, i) {
+      var box = el("div", "q"); box.appendChild(el("p", "qt", (i + 1) + ". " + item.q));
+      var opts = el("div", "opts"); var exp = el("p", "explain"); exp.hidden = true;
+      item.o.forEach(function (text, j) {
+        var b = el("button", "opt", text); b.type = "button";
+        b.addEventListener("click", function () {
+          var all = opts.querySelectorAll("button");
+          all.forEach(function (x) { x.disabled = true; });
+          all[item.a].classList.add("right");
+          if (j !== item.a) b.classList.add("wrong");
+          exp.textContent = (j === item.a ? "Right. " : "Not quite. ") + item.e; exp.hidden = false;
+          bump(j === item.a);
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(opts); box.appendChild(exp); root.appendChild(box);
+    });
+  }
+  document.getElementById("resetBtn").addEventListener("click", function () { score = 0; answered = 0; scoreEl.textContent = "Score: 0 / 0"; build(); });
+  build();
+})();
+</script>
+
+</body>
+</html>
