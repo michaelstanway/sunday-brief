@@ -89,6 +89,8 @@ a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid
 .hlans { font-size: 14px; color: var(--muted); }
 .hilo { display: flex; flex-wrap: wrap; gap: 8px; }
 .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.back { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--accent); text-decoration: none; display: inline-block; margin-bottom: 14px; }
+.back:hover { text-decoration: underline; }
 footer { padding-top: 26px; font-size: 14px; color: var(--muted); display: grid; gap: 10px; }
 footer ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
 @media (prefers-reduced-motion: no-preference) { .opt { transition: background .15s, border-color .15s; } }
@@ -98,6 +100,7 @@ footer ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
 
 
 <div class="wrap">
+  <a class="back" href="../">← All editions</a>
   <header>
     <div class="kicker">Sunday Brief · 27 September 2026 · covers Sun 20 – Sat 26 Sep</div>
     <h1>Your week, in thirty minutes</h1>

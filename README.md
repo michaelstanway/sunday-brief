@@ -2,5 +2,7 @@
 
 A weekly 30-minute news brief, rebuilt every Sunday early morning by a scheduled Claude routine.
 
-- `index.html` is always the latest edition. Its URL never changes.
-- `archive/YYYY-MM-DD.html` keeps each past edition.
+- `index.html` lists every edition, newest first. Its URL never changes.
+- `editions/YYYY-MM-DD.html` is each week's edition.
+- `build_index.py` regenerates the list.
+- `INSTRUCTIONS.md` is what the weekly routine follows.

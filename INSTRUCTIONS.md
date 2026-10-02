@@ -1,6 +1,6 @@
 # How to build the Sunday Brief
 
-You are building this week's edition of the Sunday Brief: a 30-minute weekly news read with a 20-question quiz at the bottom. It replaces `index.html` in this repo, which is published at https://michaelstanway.github.io/sunday-brief/ (GitHub Pages, `main` branch). The reader opens that same URL every Sunday morning and enters his quiz score in an app, so the URL, the 20-question quiz and the score-out-of-20 must never change.
+You are building this week's edition of the Sunday Brief: a 30-minute weekly news read with a 20-question quiz at the bottom. Each edition is its own page at `editions/YYYY-MM-DD.html` (the Sunday's date). `index.html` is the list of all editions, newest first, and is published at https://michaelstanway.github.io/sunday-brief/ (GitHub Pages, `main` branch). The reader opens that same URL every Sunday morning, clicks this week's edition, and enters his quiz score in an app, so the URL, the 20-question quiz and the score-out-of-20 must never change.
 
 ## The week you are covering
 
@@ -8,7 +8,7 @@ The edition is dated the Sunday you run on. It covers **the seven days ending th
 
 ## Steps
 
-1. **Archive.** Copy the current `index.html` to `archive/<its edition date>.html` (the date is in its kicker line) if that file doesn't exist yet.
+1. **Start from last week's edition.** Open the newest file in `editions/`; you will reuse its design (step 6). Never edit or delete past editions.
 2. **Collect candidate stories** from these sources. Headlines come from feeds; facts come from free reporting (step 3).
    - The Economist, latest issue: `https://www.economist.com/<section>/rss.xml` for sections `the-world-this-week`, `leaders`, `briefing`, `united-states`, `britain`, `europe`, `china`, `asia`, `the-americas`, `middle-east-and-africa`, `international`, `business`, `finance-and-economics`, `science-and-technology`, `culture`. Fetch with `curl -s -A "Mozilla/5.0 (compatible; RSSReader/1.0)"`. Article pages are paywalled; use only titles and descriptions.
    - Financial Times: `https://www.ft.com/<section>?format=rss` for `world`, `global-economy`, `markets`, `companies`, `technology`, `science`, `climate-capital`, `opinion`, `lex`, `the-big-read`. Feeds only hold the latest 25 items.
@@ -35,12 +35,12 @@ The edition is dated the Sunday you run on. It covers **the seven days ending th
    - **Quiz (about 8 min)**: exactly **20** multiple-choice questions, each with 4 options, one correct, and a one-line explanation. Spread them across all sections.
    - **Footer**: the sources used, as links.
    Plain English, short sentences, active voice. Quotes are verbatim and attributed. Label The Economist's and Money Stuff's own arguments as theirs. Give dates as weekday names within the week.
-6. **Build the page.** Keep the current `index.html` design exactly: copy its `<head>` (fonts, the forest colour tokens for light and dark, all CSS) and its quiz `<script>`, changing only the `MCQ` array. Replace the body content with the new edition. Update the kicker line (`Sunday Brief · <date> · covers <Sun date> – <Sat date>`). Keep `<meta name="robots" content="noindex, nofollow">`. Check that the script parses (e.g. `node -e` with `new Function(...)`) and that there are exactly 20 questions.
-7. **Publish.** Commit `index.html` and the archive file with a message like `Sunday Brief: 4 October 2026`, and push to `main`. Then fetch https://michaelstanway.github.io/sunday-brief/ (Pages takes a minute or two) and confirm the new kicker date is live.
+6. **Build the page.** Create `editions/<this Sunday's date>.html` by keeping last week's edition's design exactly: copy its `<head>` (fonts, the forest colour tokens for light and dark, all CSS), its `← All editions` back link, and its quiz `<script>`, changing only the `MCQ` array. Replace the body content with the new edition. Update the kicker line (`Sunday Brief · <date> · covers <Sun date> – <Sat date>`). Keep `<meta name="robots" content="noindex, nofollow">`. Check that the script parses (e.g. `node -e` with `new Function(...)`) and that there are exactly 20 questions.
+7. **Publish.** Run `python3 build_index.py` to regenerate `index.html` (it reads the kicker line and the first three "week in 90 seconds" headlines from every edition, so keep those structures). Commit the new edition and `index.html` with a message like `Sunday Brief: 4 October 2026`, and push to `main`. Then fetch https://michaelstanway.github.io/sunday-brief/ (Pages takes a minute or two) and confirm the new edition is listed first and its page loads.
 
 ## Rules
 
 - Never put anything personal or private in the page beyond the general interests listed above; it is public.
-- Never change the page URL, the quiz length or the scoring.
+- Never change the site URL, the quiz length or the scoring, and never rename or delete past editions.
 - If a source is unreachable, carry on with the rest and say so in the footer.
 - Do not touch any other repository.
