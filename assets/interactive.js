@@ -87,6 +87,7 @@
       beam.setAttribute("transform", "rotate(" + angle + " 200 150)");
       lt.textContent = "£" + fmt(price, 2);
       rt.textContent = fmt(y, 2) + "%";
+      node._state = { price: price, y: y };
       readout.innerHTML = "At <strong>" + fmt(y, 2) + "%</strong>, this bond is worth <strong>£" + fmt(price, 2) + "</strong>" +
         (y > 4.01 ? " — less than the £100 it was issued at." : y < 3.99 ? " — more than its £100 face value." : ", exactly its face value.");
     }, function (v) { return fmt(v, 2) + "%"; });
@@ -102,6 +103,7 @@
     function pay(L, R, Y) { var r = R / 1200, n = Y * 12; return r === 0 ? L / n : L * r / (1 - Math.pow(1 + r, -n)); }
     function draw() {
       var m = pay(loan, rate, years);
+      node._state = { loan: loan, rate: rate, years: years, pay: m };
       big.innerHTML = "<span class='fx-big-num'>£" + fmt(m) + "</span><span class='fx-big-unit'> a month</span>";
       bars.innerHTML = "";
       var rows = [{ label: "At 2% (2021-style)", rate: 2 }].concat(cfg.refs || []).concat([{ label: "Your setting", rate: rate, me: true }]);
@@ -188,6 +190,7 @@
       var off = Math.abs(guess - cfg.answer), span = cfg.max - cfg.min;
       var verdict = off <= span * 0.05 ? "Spot on." : off <= span * 0.15 ? "Close." : "Further than most would guess.";
       out.innerHTML = "<strong>" + verdict + "</strong> The answer is <strong>" + u(cfg.answer) + "</strong>. " + cfg.explain;
+      if (node._predicted) node._predicted(off <= span * 0.15);
     });
   };
 
@@ -232,6 +235,8 @@
       cfg.parties.forEach(function (p) { if (picked[p.name]) { n += p.seats; if (p.blocked) hasBlocked = true; } });
       seatsEls.forEach(function (s2) { s2.c.setAttribute("opacity", picked[s2.party.name] ? 1 : 0.22); });
       count.textContent = n + " / " + total;
+      node._state = { seats: n, need: need, blocked: hasBlocked };
+      if (node._autoCheck) node._autoCheck();
       msg.innerHTML = n === 0 ? "Tap parties to build a coalition." :
         hasBlocked ? "<strong>" + (n >= need ? "That's a majority on paper — " : "") + "but every other party has ruled out governing with the AfD</strong> (Germany's \"firewall\")." :
         n >= need ? "<strong>Majority.</strong> " + (cfg.win || "") : "Short by " + (need - n) + ".";
@@ -299,6 +304,7 @@
       svg("line", { x1: cx + w * n / maxN, y1: cy, x2: cx + w * n / maxN, y2: cy - h, class: "fx-cursor" }, g);
       svg("text", { x: cx + 4, y: cy - h + 10, class: "fx-svg-small" }, g).textContent = "INSIDE (n³)";
       svg("text", { x: cx + 4, y: cy - h + 24, class: "fx-svg-small fx-surf-label" }, g).textContent = "SURFACE (6n²)";
+      node._state = { n: n };
       vol.innerHTML = "<span class='fx-stat-num'>" + fmt(n * n * n) + "</span><span class='fx-stat-label'>cubes inside</span>";
       surf.innerHTML = "<span class='fx-stat-num'>" + fmt(6 * n * n) + "</span><span class='fx-stat-label'>squares on the surface</span>";
       ratio.innerHTML = "<span class='fx-stat-num'>" + fmt(n * n * n / (6 * n * n), 2) + "×</span><span class='fx-stat-label'>inside ÷ surface</span>";
@@ -319,6 +325,7 @@
     var gpull = 55, other = 45;
     function draw() {
       var net = gpull - other;
+      node._state = { net: net };
       knot.setAttribute("cx", 200 - net * 3);
       readout.innerHTML = Math.abs(net) < 3 ? "<strong>Balanced.</strong> Small swings either way — roughly what the record shows." :
         net > 0 ? "<strong>Gravity wins.</strong> This is the study's best fit: gravity dominant, but held in check." :
@@ -374,15 +381,109 @@
     window.addEventListener("resize", function () { if (openFor && !tip.hidden) place(openFor); });
   }
 
+  /* ---------- problems: one per figure ---------- */
+  var solvedCount = 0, problemCount = 0, badge = null;
+  function updateBadge() {
+    if (!badge) {
+      badge = el("div", { class: "fx-badge", role: "status", "aria-live": "polite" }, document.body);
+    }
+    badge.innerHTML = "<span>Problems solved</span><strong>" + solvedCount + " / " + problemCount + "</strong>";
+  }
+  var CHECKS = {
+    // Each returns true when the figure's state answers its problem.
+    priceBetween: function (st, p) { return st && st.price >= p.lo && st.price <= p.hi; },
+    maxLoan: function (st, p) { return st && st.years === p.years && st.rate >= p.rateLo && st.rate <= p.rateHi && st.pay <= p.budget && st.loan >= p.minLoan; },
+    majorityWithout: function (st) { return st && st.seats >= st.need && !st.blocked; },
+    cubeSize: function (st, p) { return st && st.n === p.n; },
+    netBetween: function (st, p) { return st && st.net >= p.lo && st.net <= p.hi; }
+  };
+  function problem(node, p) {
+    problemCount++;
+    var box = el("div", { class: "fx-problem" });
+    var head = node.querySelector(".fx-head");
+    if (head && head.nextSibling) node.insertBefore(box, head.nextSibling); else node.insertBefore(box, node.firstChild);
+    var top = el("div", { class: "fx-problem-top" }, box);
+    el("span", { class: "fx-problem-label" }, top, "Problem");
+    var status = el("span", { class: "fx-status" }, top, "Unsolved");
+    if (p.type !== "predict") el("p", { class: "fx-problem-text" }, box, p.text);
+    var controls = el("div", { class: "fx-problem-controls" }, box);
+    var feedback = el("p", { class: "fx-feedback", hidden: "" }, box);
+    var done = false;
+    function solve() {
+      if (done) return;
+      done = true; solvedCount++; updateBadge();
+      status.textContent = "Solved ✓"; status.classList.add("ok"); box.classList.add("solved");
+      feedback.hidden = false; feedback.innerHTML = "<strong>Solved.</strong> " + p.why;
+      controls.querySelectorAll("button").forEach(function (b) { if (!b.classList.contains("fx-opt-pick")) b.disabled = true; });
+    }
+    function miss(msg) { if (done) return; feedback.hidden = false; feedback.innerHTML = msg || "Not yet. Keep exploring the figure."; }
+    if (p.type === "choice") {
+      p.options.forEach(function (o, i) {
+        var b = el("button", { type: "button", class: "fx-opt-pick" }, controls, o);
+        b.addEventListener("click", function () {
+          if (done) return;
+          if (i === p.answer) { b.classList.add("right"); solve(); } else { b.classList.add("wrong"); miss("Not quite. Use the figure, then try again."); }
+        });
+      });
+    } else if (p.type === "predict") {
+      node._predicted = function (close) { if (close) solve(); else { done = true; status.textContent = "Answered"; feedback.hidden = false; feedback.innerHTML = "Not close this time. The reveal above shows why."; } };
+      el("span", { class: "fx-problem-hint-inline" }, controls, "Make your guess in the figure, then press Reveal. Within 15% counts as solved.");
+    } else {
+      var check = function () { return CHECKS[p.check] && CHECKS[p.check](node._state, p); };
+      var btn = el("button", { type: "button", class: "fx-btn" }, controls, "Check my answer");
+      btn.addEventListener("click", function () { if (check()) solve(); else miss(p.miss); });
+      if (p.auto) node._autoCheck = function () { if (check()) solve(); };
+    }
+    if (p.hint) {
+      var h = el("button", { type: "button", class: "fx-btn ghost" }, controls, "Hint");
+      h.addEventListener("click", function () { if (!done) { feedback.hidden = false; feedback.innerHTML = "<strong>Hint:</strong> " + p.hint; } });
+    }
+    updateBadge();
+  }
+
+  /* ---------- people cards ---------- */
+  function people() {
+    var data = {};
+    var src = document.getElementById("people");
+    if (src) { try { data = JSON.parse(src.textContent); } catch (e) { data = {}; } }
+    var card = el("div", { class: "fx-who", role: "dialog", hidden: "" }, document.body);
+    var openFor = null, hideTimer = null;
+    function show(t) {
+      var d = data[t.getAttribute("data-who")]; if (!d) return;
+      clearTimeout(hideTimer);
+      card.innerHTML = (d.img ? "<img src='" + d.img + "' alt='' loading='lazy'>" : "") +
+        "<div><strong>" + d.name + "</strong><span class='fx-who-role'>" + (d.role || "") + "</span><p>" + d.bio + "</p>" +
+        (d.url ? "<a href='" + d.url + "' target='_blank' rel='noopener'>Wikipedia ↗</a>" : "") + "</div>";
+      card.hidden = false; openFor = t;
+      var r = t.getBoundingClientRect();
+      card.style.left = Math.max(12, Math.min(window.innerWidth - 332, r.left + window.scrollX)) + "px";
+      card.style.top = (r.bottom + window.scrollY + 8) + "px";
+    }
+    function hideSoon() { hideTimer = setTimeout(function () { card.hidden = true; openFor = null; }, 250); }
+    document.querySelectorAll(".who[data-who]").forEach(function (t) {
+      if (!data[t.getAttribute("data-who")]) return;
+      t.setAttribute("tabindex", "0"); t.setAttribute("role", "button");
+      t.addEventListener("mouseenter", function () { show(t); });
+      t.addEventListener("mouseleave", hideSoon);
+      t.addEventListener("focus", function () { show(t); });
+      t.addEventListener("click", function (ev) { ev.stopPropagation(); if (openFor === t && !card.hidden) { card.hidden = true; openFor = null; } else show(t); });
+    });
+    card.addEventListener("mouseenter", function () { clearTimeout(hideTimer); });
+    card.addEventListener("mouseleave", hideSoon);
+    card.addEventListener("click", function (ev) { ev.stopPropagation(); });
+    document.addEventListener("click", function () { card.hidden = true; openFor = null; });
+  }
+
   function init() {
     document.querySelectorAll(".fig[data-fig]").forEach(function (node) {
       var f = FIGS[node.getAttribute("data-fig")];
       if (!f) return;
       var cfg = {};
       try { cfg = JSON.parse(node.getAttribute("data-config") || "{}"); } catch (e) { cfg = {}; }
-      try { f(node, cfg); } catch (e) { node.innerHTML = "<p class='fx-note'>This figure couldn't load.</p>"; if (window.console) console.error(e); }
+      try { f(node, cfg); if (cfg.problem) problem(node, cfg.problem); } catch (e) { node.innerHTML = "<p class='fx-note'>This figure couldn't load.</p>"; if (window.console) console.error(e); }
     });
     glossary();
+    people();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
