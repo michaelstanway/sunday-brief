@@ -1,0 +1,46 @@
+# How to build the Sunday Brief
+
+You are building this week's edition of the Sunday Brief: a 30-minute weekly news read with a 20-question quiz at the bottom. It replaces `index.html` in this repo, which is published at https://michaelstanway.github.io/sunday-brief/ (GitHub Pages, `main` branch). The reader opens that same URL every Sunday morning and enters his quiz score in an app, so the URL, the 20-question quiz and the score-out-of-20 must never change.
+
+## The week you are covering
+
+The edition is dated the Sunday you run on. It covers **the seven days ending the day before** (Sunday to Saturday). Use only facts published by the moment you run. Never use anything you cannot source.
+
+## Steps
+
+1. **Archive.** Copy the current `index.html` to `archive/<its edition date>.html` (the date is in its kicker line) if that file doesn't exist yet.
+2. **Collect candidate stories** from these sources. Headlines come from feeds; facts come from free reporting (step 3).
+   - The Economist, latest issue: `https://www.economist.com/<section>/rss.xml` for sections `the-world-this-week`, `leaders`, `briefing`, `united-states`, `britain`, `europe`, `china`, `asia`, `the-americas`, `middle-east-and-africa`, `international`, `business`, `finance-and-economics`, `science-and-technology`, `culture`. Fetch with `curl -s -A "Mozilla/5.0 (compatible; RSSReader/1.0)"`. Article pages are paywalled; use only titles and descriptions.
+   - Financial Times: `https://www.ft.com/<section>?format=rss` for `world`, `global-economy`, `markets`, `companies`, `technology`, `science`, `climate-capital`, `opinion`, `lex`, `the-big-read`. Feeds only hold the latest 25 items.
+   - Money Stuff (Matt Levine): `https://www.bloomberg.com/opinion/authors/ARbTQlRLRjE/matthew-s-levine.rss` (headlines only; research the news behind each).
+   - Quanta: `https://www.quantamagazine.org/feed/` (full articles are free; read the chosen one in full).
+   - Nature news: `https://www.nature.com/nature.rss` (news items have URLs containing `d41586`; ignore research papers). Pages may need `curl` with a cookie jar.
+   - Space and Earth observation: `https://payloadspace.com/feed/`, `https://spacenews.com/feed/`, plus searches.
+   - Wikipedia Current events, one page per day: `https://en.wikipedia.org/w/index.php?title=Portal:Current_events/2026_September_27&action=raw` (adjust the date).
+3. **Research.** Use subagents in parallel (world, markets and money, The Economist's picks, science, space and EO). Every fact comes from a free, reputable source (Reuters, AP, BBC, Al Jazeera, NPR, CNBC, France 24, central banks, journals, company releases). Check every number and quote in the top stories against at least two outlets. If you can't confirm something, leave it out or say "reportedly". Never reconstruct the text of a paywalled article from its headline.
+4. **Select.** About 8 stories in depth, everything else one line. Priority order:
+   1. Covered by two or more sources.
+   2. Still matters in a year (rates, elections, wars, big science).
+   3. Relevant to the reader: space and Earth observation (he works in EO satellite data), AI, the UK and California, and everyday health and supplements.
+   4. One "wonder" piece a week, usually from Quanta.
+   5. Conflict, crime and disasters together take no more than a third of the page.
+   Drop single-day incidents unless huge, keep sport to a line, and drop anything only one source mentions.
+5. **Write** about 4,000 words of reading plus the quiz, in this exact section order and time budget:
+   - **The week in 90 seconds**: 6 numbered headlines.
+   - **The world (about 6 min)**: 3 stories in depth (background, this week, what to watch), then about 8 one-liners.
+   - **Markets and money (about 5 min)**: 1 big story explained, a box with Friday's closing numbers (US 10-year yield, S&P 500 and its weekly move, Brent, gold, bitcoin, plus one number relevant that week), then 3 to 4 Money Stuff and FT one-liners.
+   - **The Economist's picks (about 6 min)**: 2 stories in depth with The Economist's angle in an italic `.angle` line labelled as theirs, then one line per other notable piece.
+   - **Science (about 6 min)**: 1 Quanta piece explained properly (core idea, what's new, who, verbatim attributed quotes, what's uncertain), then 3 short Nature items, then "Also in science" one-liners.
+   - **Space and EO (about 2 min)**: 4 to 6 items, the top 3 each with a factual "why it matters for EO operators".
+   - **Quiz (about 8 min)**: exactly **20** multiple-choice questions, each with 4 options, one correct, and a one-line explanation. Spread them across all sections.
+   - **Footer**: the sources used, as links.
+   Plain English, short sentences, active voice. Quotes are verbatim and attributed. Label The Economist's and Money Stuff's own arguments as theirs. Give dates as weekday names within the week.
+6. **Build the page.** Keep the current `index.html` design exactly: copy its `<head>` (fonts, the forest colour tokens for light and dark, all CSS) and its quiz `<script>`, changing only the `MCQ` array. Replace the body content with the new edition. Update the kicker line (`Sunday Brief · <date> · covers <Sun date> – <Sat date>`). Keep `<meta name="robots" content="noindex, nofollow">`. Check that the script parses (e.g. `node -e` with `new Function(...)`) and that there are exactly 20 questions.
+7. **Publish.** Commit `index.html` and the archive file with a message like `Sunday Brief: 4 October 2026`, and push to `main`. Then fetch https://michaelstanway.github.io/sunday-brief/ (Pages takes a minute or two) and confirm the new kicker date is live.
+
+## Rules
+
+- Never put anything personal or private in the page beyond the general interests listed above; it is public.
+- Never change the page URL, the quiz length or the scoring.
+- If a source is unreachable, carry on with the rest and say so in the footer.
+- Do not touch any other repository.
