@@ -130,6 +130,13 @@ ul.quick li:first-child { border-top: 0; padding-top: 0; }
 }
 .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
+/* ---------- source links ---------- */
+.read { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: var(--ink-2); margin: 0; padding-top: 8px; border-top: 1px solid var(--hair); }
+.read a { color: var(--ink); }
+.src { font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+.src a { color: var(--ink-2); }
+.read a:hover, .src a:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+
 /* ---------- quiz ---------- */
 .score {
   position: sticky; top: 0; z-index: 2; background: var(--paper);
