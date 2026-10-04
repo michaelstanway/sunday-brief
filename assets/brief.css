@@ -420,3 +420,7 @@ details.deeper > summary:hover { text-decoration: underline; }
 .board-of { font-family: var(--mono); font-size: 13px; color: var(--ink-3); }
 .board-msg { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); margin: 0; min-height: 1em; }
 .board-note { font-family: var(--mono); font-size: 12px; color: var(--ink-3); margin: 0; }
+
+/* go deeper inside "Also this week" one-liners: same control, smaller type */
+.quick li details.deeper { margin-top: 6px; border-top: 1px dashed var(--hair); }
+.quick li .deeper-body { font-size: 15px; }
