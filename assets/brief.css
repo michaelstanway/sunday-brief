@@ -402,3 +402,21 @@ details.deeper > summary:hover { text-decoration: underline; }
 .deeper-body { display: grid; gap: 10px; padding: 8px 0 2px; font-size: 16.5px; line-height: 1.55; }
 .deeper-body p { margin: 0; }
 .deeper-body strong:first-child { font-family: var(--mono); font-size: .76em; font-weight: 500; text-transform: uppercase; letter-spacing: .02em; color: var(--ink-2); }
+
+/* ---------- leaderboard (assets/scores.js) ---------- */
+.board { border: 1px solid var(--rule); padding: 14px 16px; margin: 0 0 22px; display: grid; gap: 10px; background: var(--paper); }
+.board-label { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 0; }
+.board-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.board-row { display: grid; grid-template-columns: 2.2em minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--hair); }
+.board-row:first-child .board-rank { background: var(--gold); color: var(--ink); }
+.board-rank { font-family: var(--mono); font-size: 12px; text-align: center; border: 1px solid var(--rule); padding: 1px 0; }
+.board-name { font-weight: 600; overflow-wrap: anywhere; }
+.board-score { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.board-empty { font-family: var(--mono); font-size: 13px; color: var(--ink-3); padding: 4px 0; }
+.board-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.board-form input { font: inherit; font-family: var(--mono); font-size: 14px; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 0; padding: 7px 10px; min-width: 0; }
+.board-form input[type="text"] { flex: 1 1 10rem; }
+.board-form input[type="number"] { width: 5.5rem; }
+.board-of { font-family: var(--mono); font-size: 13px; color: var(--ink-3); }
+.board-msg { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); margin: 0; min-height: 1em; }
+.board-note { font-family: var(--mono); font-size: 12px; color: var(--ink-3); margin: 0; }
