@@ -441,12 +441,17 @@
       tip.style.left = Math.max(12, Math.min(window.innerWidth - 292, r.left + window.scrollX)) + "px";
       tip.style.top = (r.bottom + window.scrollY + 8) + "px";
     }
+    var hoverDev = !!(window.matchMedia && window.matchMedia("(hover: hover)").matches);
     document.querySelectorAll("dfn[data-def]").forEach(function (t) {
       t.setAttribute("tabindex", "0");
       t.setAttribute("role", "button");
       function open() { tip.innerHTML = "<strong>" + t.textContent + "</strong> " + t.getAttribute("data-def"); tip.hidden = false; place(t); openFor = t; }
-      t.addEventListener("click", function (ev) { ev.stopPropagation(); if (openFor === t && !tip.hidden) { tip.hidden = true; openFor = null; } else open(); });
+      t.addEventListener("click", function (ev) { ev.stopPropagation(); if (!hoverDev && openFor === t && !tip.hidden) { tip.hidden = true; openFor = null; } else open(); });
       t.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); open(); } if (ev.key === "Escape") tip.hidden = true; });
+      if (hoverDev) {
+        t.addEventListener("mouseenter", open);
+        t.addEventListener("mouseleave", function () { if (openFor === t) { tip.hidden = true; openFor = null; } });
+      }
     });
     document.addEventListener("click", function () { tip.hidden = true; openFor = null; });
     window.addEventListener("resize", function () { if (openFor && !tip.hidden) place(openFor); });
