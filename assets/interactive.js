@@ -336,6 +336,77 @@
   };
 
   /* ---------- 9. Timeline ---------- */
+  /* ---------- 9. Downlink budget: what compression buys a satellite ---------- */
+  FIGS.downlink = function (node, cfg) {
+    var body = frame(node, cfg.title || "Can the satellite get its pictures down?", cfg.note);
+    var big = el("div", { class: "fx-big" }, body);
+    var bars = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    var ratio = 1, passes = cfg.passes || 4;
+    var mbps = cfg.mbps, mins = cfg.minutes, imaged = cfg.imagedGB;
+    function draw() {
+      // Gigabytes the link can carry a day: Mbit/s × seconds ÷ 8000.
+      var link = mbps * mins * 60 * passes / 8000;
+      var need = imaged / ratio;
+      var share = Math.min(1, link / need);
+      node._state = { ratio: ratio, passes: passes, link: link, need: need, share: share };
+      big.innerHTML = "<span class='fx-big-num'>" + fmt(100 * share) + "%</span><span class='fx-big-unit'> of each day's imagery reaches the ground</span>";
+      bars.innerHTML = "";
+      var max = Math.max(link, imaged);
+      [{ label: "Imaged a day (raw)", v: imaged }, { label: "To send after compression", v: need }, { label: "Link capacity a day", v: link, me: true }].forEach(function (r) {
+        var row = el("div", { class: "fx-bar-row" + (r.me ? " me" : "") }, bars);
+        el("span", { class: "fx-bar-label" }, row, r.label);
+        var track = el("span", { class: "fx-bar-track" }, row);
+        el("span", { class: "fx-bar-fill", style: "width:" + (100 * r.v / max) + "%" }, track);
+        el("span", { class: "fx-bar-val" }, row, fmt(r.v) + " GB");
+      });
+      out.innerHTML = share >= 1 ? "<strong>Everything gets down.</strong> Spare capacity: " + fmt(link - need) + " GB a day." : "<strong>" + fmt(need - link) + " GB a day stays on board</strong> or is never taken.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    slider(body, "Compression ratio", 1, 20, 0.5, ratio, function (v) { ratio = v; draw(); }, function (v) { return fmt(v, 1) + " : 1"; });
+    slider(body, "Ground-station passes a day", 1, 16, 1, passes, function (v) { passes = v; draw(); }, function (v) { return fmt(v); });
+  };
+
+  /* ---------- 10. Graham's rearrangement: make every running total different ---------- */
+  FIGS.rearrange = function (node, cfg) {
+    var p = cfg.p, order = cfg.start.slice();
+    var body = frame(node, cfg.title || "Reorder the numbers so no running total repeats", cfg.note);
+    var row = el("div", { class: "fx-toggles", role: "group" }, body);
+    var s = svg("svg", { viewBox: "0 0 400 190", class: "fx-svg", role: "img", "aria-label": "Clock of remainders modulo " + p }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    var picked = -1;
+    function pos(r, rad) { var a = -Math.PI / 2 + 2 * Math.PI * r / p; return [200 + rad * Math.cos(a), 95 + rad * Math.sin(a)]; }
+    function draw() {
+      row.innerHTML = "";
+      order.forEach(function (v, i) {
+        var b = el("button", { type: "button", class: "fx-tog", "aria-pressed": String(i === picked) }, row, String(v));
+        b.addEventListener("click", function () {
+          if (picked < 0) picked = i;
+          else { var t = order[picked]; order[picked] = order[i]; order[i] = t; picked = -1; }
+          draw();
+        });
+      });
+      s.innerHTML = "";
+      var sums = [], tot = 0, hits = {};
+      order.forEach(function (v) { tot = (tot + v) % p; sums.push(tot); hits[tot] = (hits[tot] || 0) + 1; });
+      for (var r = 0; r < p; r++) {
+        var c = pos(r, 72), bad = hits[r] > 1;
+        svg("circle", { cx: c[0], cy: c[1], r: 13, style: "fill:" + (bad ? "var(--bad-soft)" : hits[r] ? "var(--moss)" : "var(--paper-2)") + ";stroke:" + (bad ? "var(--bad)" : "var(--hair)") }, s);
+        var t = svg("text", { x: c[0], y: c[1] + 4, "text-anchor": "middle", class: "fx-svg-small" }, s); t.textContent = String(r);
+      }
+      var d = "";
+      sums.forEach(function (r, i) { var c = pos(r, 56); d += (i ? "L" : "M") + c[0] + "," + c[1]; });
+      svg("path", { d: d, style: "fill:none;stroke:var(--forest);stroke-width:2" }, s);
+      var dup = sums.filter(function (r) { return hits[r] > 1; });
+      var valid = dup.length === 0;
+      node._state = { valid: valid, order: order.slice() };
+      out.innerHTML = "Running totals (mod " + p + "): <strong>" + sums.join(" → ") + "</strong>. " +
+        (valid ? "<strong>All different.</strong> A valid ordering." : "<strong>" + dup[0] + " repeats.</strong> Tap two numbers to swap them.");
+      if (node._autoCheck) node._autoCheck();
+    }
+    draw();
+  };
+
   FIGS.timeline = function (node, cfg) {
     var body = frame(node, cfg.title, null);
     var line = el("div", { class: "fx-tl" }, body);
@@ -395,7 +466,9 @@
     maxLoan: function (st, p) { return st && st.years === p.years && st.rate >= p.rateLo && st.rate <= p.rateHi && st.pay <= p.budget && st.loan >= p.minLoan; },
     majorityWithout: function (st) { return st && st.seats >= st.need && !st.blocked; },
     cubeSize: function (st, p) { return st && st.n === p.n; },
-    netBetween: function (st, p) { return st && st.net >= p.lo && st.net <= p.hi; }
+    netBetween: function (st, p) { return st && st.net >= p.lo && st.net <= p.hi; },
+    rearrangeValid: function (st) { return st && st.valid; },
+    downlinkAll: function (st, p) { return st && st.share >= 1 && st.passes <= p.maxPasses && st.ratio <= p.maxRatio; }
   };
   function problem(node, p) {
     problemCount++;
