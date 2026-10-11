@@ -407,6 +407,48 @@
     draw();
   };
 
+  /* ---------- 11. A unique game: label the nodes to satisfy edge rules mod k ---------- */
+  FIGS.uniquegame = function (node, cfg) {
+    var k = cfg.k, n = cfg.nodes, edges = cfg.edges, lab = [];
+    for (var i = 0; i < n; i++) lab.push(0);
+    var body = frame(node, cfg.title || "Label the dots to satisfy the rules", cfg.note);
+    var s = svg("svg", { viewBox: "0 0 400 220", class: "fx-svg", role: "img", "aria-label": "A small unique game with " + n + " dots" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    var reset = el("button", { type: "button", class: "fx-btn ghost" }, body, "Set all to 0");
+    function pos(i) { var a = -Math.PI / 2 + 2 * Math.PI * i / n; return [200 + 120 * Math.cos(a), 110 + 88 * Math.sin(a)]; }
+    function ok(e) { return ((lab[e[1]] - lab[e[0]] - e[2]) % k + k) % k === 0; }
+    function draw() {
+      s.innerHTML = "";
+      var sat = 0;
+      edges.forEach(function (e) {
+        var a = pos(e[0]), b = pos(e[1]), good = ok(e);
+        if (good) sat++;
+        svg("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], style: "stroke:" + (good ? "var(--forest)" : "var(--bad)") + ";stroke-width:" + (good ? 2 : 3) + (good ? "" : ";stroke-dasharray:6 4") }, s);
+        var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        svg("rect", { x: mx - 15, y: my - 10, width: 30, height: 18, rx: 4, style: "fill:var(--paper);stroke:var(--hair)" }, s);
+        var t = svg("text", { x: mx, y: my + 3, "text-anchor": "middle", class: "fx-svg-small" }, s);
+        t.textContent = "+" + e[2];
+      });
+      lab.forEach(function (v, i) {
+        var c = pos(i);
+        var g = svg("g", { tabindex: "0", role: "button", "aria-label": "Dot " + String.fromCharCode(65 + i) + ", label " + v, style: "cursor:pointer" }, s);
+        svg("circle", { cx: c[0], cy: c[1], r: 17, style: "fill:var(--paper-2);stroke:var(--ink);stroke-width:1.5" }, g);
+        var t = svg("text", { x: c[0], y: c[1] + 5, "text-anchor": "middle", class: "fx-svg-label" }, g);
+        t.textContent = String(v);
+        var nm = svg("text", { x: c[0] + 22, y: c[1] - 14, class: "fx-svg-small" }, g);
+        nm.textContent = String.fromCharCode(65 + i);
+        function bump() { lab[i] = (lab[i] + 1) % k; draw(); }
+        g.addEventListener("click", bump);
+        g.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); bump(); } });
+      });
+      node._state = { sat: sat, total: edges.length, labels: lab.slice() };
+      out.innerHTML = "<strong>" + sat + " of " + edges.length + " rules satisfied.</strong> A rule \"+c\" on the line from X to Y means Y = X + c, counting mod " + k + ". Tap a dot to change its label.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    reset.addEventListener("click", function () { for (var i = 0; i < n; i++) lab[i] = 0; draw(); });
+    draw();
+  };
+
   FIGS.timeline = function (node, cfg) {
     var body = frame(node, cfg.title, null);
     var line = el("div", { class: "fx-tl" }, body);
@@ -473,7 +515,8 @@
     cubeSize: function (st, p) { return st && st.n === p.n; },
     netBetween: function (st, p) { return st && st.net >= p.lo && st.net <= p.hi; },
     rearrangeValid: function (st) { return st && st.valid; },
-    downlinkAll: function (st, p) { return st && st.share >= 1 && st.passes <= p.maxPasses && st.ratio <= p.maxRatio; }
+    downlinkAll: function (st, p) { return st && st.share >= 1 && st.passes <= p.maxPasses && st.ratio <= p.maxRatio; },
+    uniqueSat: function (st, p) { return st && st.sat >= p.min; }
   };
   function problem(node, p) {
     problemCount++;
