@@ -449,6 +449,34 @@
     draw();
   };
 
+  /* ---------- 12. Weighing a galaxy by how fast its stars move ---------- */
+  FIGS.darkspeed = function (node, cfg) {
+    var body = frame(node, cfg.title || "How much dark matter fits the measured speed?", cfg.note);
+    var big = el("div", { class: "fx-big" }, body);
+    var bars = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    var ratio = 0, lo = cfg.measured - cfg.minus, hi = cfg.measured + cfg.plus;
+    function draw() {
+      // Speed grows with the square root of the mass inside the galaxy.
+      var sigma = cfg.starsOnly * Math.sqrt(1 + ratio);
+      var inside = sigma >= lo && sigma <= hi;
+      node._state = { ratio: ratio, sigma: sigma, inside: inside };
+      big.innerHTML = "<span class='fx-big-num'>" + fmt(sigma, 1) + "</span><span class='fx-big-unit'> km/s predicted star speed</span>";
+      bars.innerHTML = "";
+      var max = Math.max(cfg.halo, sigma) * 1.05;
+      [{ label: "Measured (upper error)", v: hi }, { label: "Measured", v: cfg.measured }, { label: "Stars only", v: cfg.starsOnly }, { label: "Normal dark-matter halo", v: cfg.halo }, { label: "Your galaxy", v: sigma, me: true }].forEach(function (r) {
+        var row = el("div", { class: "fx-bar-row" + (r.me ? " me" : "") }, bars);
+        el("span", { class: "fx-bar-label" }, row, r.label);
+        var track = el("span", { class: "fx-bar-track" }, row);
+        el("span", { class: "fx-bar-fill", style: "width:" + (100 * r.v / max) + "%" }, track);
+        el("span", { class: "fx-bar-val" }, row, fmt(r.v, 1) + " km/s");
+      });
+      out.innerHTML = inside ? "<strong>Fits the measurement.</strong> It lies between " + fmt(lo, 1) + " and " + fmt(hi, 1) + " km/s." : "<strong>Too fast.</strong> The stars would move faster than the measurement allows.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    slider(body, "Dark matter for each unit of star mass", 0, cfg.max || 10, 0.1, 0, function (v) { ratio = v; draw(); }, function (v) { return fmt(v, 1) + " : 1"; });
+  };
+
   FIGS.timeline = function (node, cfg) {
     var body = frame(node, cfg.title, null);
     var line = el("div", { class: "fx-tl" }, body);
@@ -516,7 +544,8 @@
     netBetween: function (st, p) { return st && st.net >= p.lo && st.net <= p.hi; },
     rearrangeValid: function (st) { return st && st.valid; },
     downlinkAll: function (st, p) { return st && st.share >= 1 && st.passes <= p.maxPasses && st.ratio <= p.maxRatio; },
-    uniqueSat: function (st, p) { return st && st.sat >= p.min; }
+    uniqueSat: function (st, p) { return st && st.sat >= p.min; },
+    darkRatio: function (st, p) { return st && st.inside && st.ratio >= p.lo && st.ratio <= p.hi; }
   };
   function problem(node, p) {
     problemCount++;
