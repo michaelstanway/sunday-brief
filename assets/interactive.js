@@ -502,6 +502,42 @@
     show(cfg.events.length - 1);
   };
 
+  /* ---------- 14. Zero-free strip: how far from the edge the zeta zeros must stay ---------- */
+  FIGS.zerostrip = function (node, cfg) {
+    var body = frame(node, cfg.title || "How a zero-free strip tightens the prime count", cfg.note);
+    var s = svg("svg", { viewBox: "0 0 400 120", class: "fx-svg", role: "img", "aria-label": "The critical strip, with the region where zeta zeros may lie" }, body);
+    var X = function (re) { return 40 + 320 * re; };
+    svg("rect", { x: X(0), y: 20, width: 320, height: 60, class: "fx-paper2" }, s);
+    var free1 = svg("rect", { x: X(1), y: 20, width: 0, height: 60, class: "fx-forest" }, s);
+    var free0 = svg("rect", { x: X(0), y: 20, width: 0, height: 60, class: "fx-forest" }, s);
+    svg("rect", { x: X(0.5) - 1, y: 20, width: 2, height: 60, class: "fx-ink" }, s);
+    [[0, "0"], [0.5, "1/2"], [1, "1"]].forEach(function (t) {
+      svg("text", { x: X(t[0]), y: 98, class: "fx-svg-small", "text-anchor": "middle" }, s).textContent = t[1];
+    });
+    svg("text", { x: 200, y: 114, class: "fx-svg-small", "text-anchor": "middle" }, s).textContent = "REAL PART OF s";
+    var lab = svg("text", { x: 200, y: 14, class: "fx-svg-small", "text-anchor": "middle" }, s);
+    var big = el("div", { class: "fx-big" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    var opt = cfg.options[0], k = cfg.start || 12;
+    function draw() {
+      var sg = opt.sigma, w = 320 * (1 - sg);
+      free1.setAttribute("x", X(sg)); free1.setAttribute("width", w); free0.setAttribute("width", w);
+      lab.textContent = sg >= 1 ? "NO FIXED ZERO-FREE STRIP" : "GREEN: NO ZEROS ALLOWED (WIDTH " + fmt(1 - sg, 3) + " EACH SIDE)";
+      var rel = sg >= 1 ? null : Math.pow(10, k * (sg - 1));
+      node._state = { sigma: sg, k: k, rel: rel === null ? 1 : rel };
+      if (rel === null) {
+        big.innerHTML = "<span class='fx-big-num'>?</span><span class='fx-big-unit'> no power-saving guarantee</span>";
+        out.innerHTML = "<strong>No fixed strip.</strong> The known zero-free regions shrink toward the line 1, so the error in counting primes up to 10<sup>" + k + "</sup> shrinks more slowly than any power of x.";
+      } else {
+        big.innerHTML = "<span class='fx-big-num'>" + (rel >= 0.001 ? fmt(100 * rel, rel >= 0.1 ? 0 : 2) + "%" : "10<sup>" + fmt(k * (sg - 1) + 2, 1) + "</sup>%") + "</span><span class='fx-big-unit'> error bound, as a share of the count</span>";
+        out.innerHTML = "Counting primes up to <strong>10<sup>" + k + "</sup></strong>: the error is at most about x<sup>" + opt.text + "</sup> = 10<sup>" + fmt(k * sg, 1) + "</sup>, out of roughly x = 10<sup>" + k + "</sup>.";
+      }
+      if (node._autoCheck) node._autoCheck();
+    }
+    toggles(body, cfg.options.map(function (o) { return o.label; }), function (i) { opt = cfg.options[i]; draw(); });
+    slider(body, "Count primes up to x = 10^k", cfg.min || 4, cfg.max || 30, 1, k, function (v) { k = v; draw(); }, function (v) { return "k = " + fmt(v); });
+  };
+
   /* ---------- glossary pop-ups ---------- */
   function glossary() {
     var tip = el("div", { class: "fx-tip", role: "tooltip", hidden: "" }, document.body);
@@ -545,7 +581,8 @@
     rearrangeValid: function (st) { return st && st.valid; },
     downlinkAll: function (st, p) { return st && st.share >= 1 && st.passes <= p.maxPasses && st.ratio <= p.maxRatio; },
     uniqueSat: function (st, p) { return st && st.sat >= p.min; },
-    darkRatio: function (st, p) { return st && st.inside && st.ratio >= p.lo && st.ratio <= p.hi; }
+    darkRatio: function (st, p) { return st && st.inside && st.ratio >= p.lo && st.ratio <= p.hi; },
+    relErrBelow: function (st, p) { return st && Math.abs(st.sigma - p.sigma) < 1e-3 && st.rel <= p.max; }
   };
   function problem(node, p) {
     problemCount++;
