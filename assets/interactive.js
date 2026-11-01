@@ -988,6 +988,172 @@
     });
   };
 
+  /* ---------- 1 Nov 2026 figures ---------- */
+  /* cashgap: free cash flow = cash from operations − capital spending; a gap must be borrowed or raised.
+     cfg: {firms:[{name, ocf, capex}] ($bn a quarter), chg, yield} */
+  FIGS.cashgap = function (node, cfg) {
+    var body = frame(node, cfg.title || "Who pays for the data centres?", cfg.note);
+    var firms = cfg.firms, f = 0, chg = cfg.chg || 0, y = cfg.yield || 5;
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var F = firms[f], capex = F.capex * (1 + chg / 100), fcf = F.ocf - capex, gapYear = Math.max(0, -fcf * 4), interest = gapYear * y / 100;
+      node._state = { firm: f, name: F.name, chg: chg, yield: y, fcf: fcf, gapYear: gapYear, interest: interest };
+      big.innerHTML = "<span class='fx-big-num'>" + (fcf < 0 ? "−$" : "+$") + fmt(Math.abs(fcf), 1) + "bn</span><span class='fx-big-unit'> free cash flow a quarter, " + F.name + "</span>";
+      var max = Math.max(F.ocf, capex, 10) * 1.05;
+      bars(bx, [{ label: "Cash from operations", v: F.ocf }, { label: "Capital spending", v: capex, me: true }, { label: "Gap to borrow or raise", v: Math.max(0, -fcf) }], max, function (v) { return "$" + fmt(v, 1) + "bn"; });
+      out.innerHTML = fcf >= 0 ? "<strong>The business pays for its own build-out.</strong> Nothing has to be borrowed." :
+        "<strong>About $" + fmt(gapYear, 0) + "bn a year</strong> must come from lenders or new shares. Borrowed at " + fmt(y, 1) + "%, it adds <strong>$" + fmt(interest, 1) + "bn of interest a year</strong>, and the pile grows every year the gap lasts.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    toggles(body, firms.map(function (x) { return x.name; }), function (i) { f = i; draw(); });
+    slider(body, "Change in capital spending", -40, 60, 5, chg, function (v) { chg = v; draw(); }, function (v) { return (v > 0 ? "+" : "") + v + "%"; });
+    slider(body, "Interest rate on borrowing", 3, 9, 0.5, y, function (v) { y = v; draw(); }, function (v) { return fmt(v, 1) + "%"; });
+  };
+
+  /* swing: a group's effect on the national margin = its share of voters × the change in its margin.
+     cfg: {groups:[{name, share, swing}]} (share in %, swing in margin points) */
+  FIGS.swing = function (node, cfg) {
+    var body = frame(node, cfg.title || "Small groups, big swings", cfg.note);
+    var g = cfg.groups.map(function (x) { return { name: x.name, share: x.share, swing: x.swing || 0 }; });
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var total = 0, moved = [];
+      g.forEach(function (x, i) { total += x.share * x.swing / 100; if (x.swing !== 0) moved.push(i); });
+      node._state = { total: total, moved: moved, swings: g.map(function (x) { return x.swing; }) };
+      big.innerHTML = "<span class='fx-big-num'>" + (total > 0 ? "+" : "") + fmt(total, 1) + " pts</span><span class='fx-big-unit'> change in the national margin</span>";
+      bars(bx, g.map(function (x) { return { label: x.name + " (" + fmt(x.share) + "% of voters)", v: Math.abs(x.share * x.swing / 100), me: x.swing !== 0 }; }), 5, function (v) { return fmt(v, 1) + " pts"; });
+      out.innerHTML = "Each bar is that group's share of voters times the change in its margin. A swing of 10 points in a group that is 10% of voters moves the country 1 point.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    g.forEach(function (x, i) {
+      slider(body, "Change in margin among " + x.name, -30, 30, 1, x.swing, function (v) { g[i].swing = v; draw(); }, function (v) { return (v > 0 ? "+" : "") + v + " pts"; });
+    });
+  };
+
+  /* exittax: tax on selling a company under two sets of rules.
+     cfg: {regimes:[{label, bands:[{upto, rate}], top}]} (upto in £m, rates in %) */
+  FIGS.exittax = function (node, cfg) {
+    var body = frame(node, cfg.title || "What a founder pays on a sale", cfg.note);
+    var regs = cfg.regimes, r = 0, gain = cfg.gain || 5;
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function tax(R, G) {
+      var t = 0, prev = 0;
+      R.bands.forEach(function (b) { var slice = Math.max(0, Math.min(G, b.upto) - prev); t += slice * b.rate / 100; prev = Math.max(prev, b.upto); });
+      t += Math.max(0, G - prev) * R.top / 100;
+      return t;
+    }
+    function draw() {
+      var taxes = regs.map(function (R) { return tax(R, gain); }), t = taxes[r], eff = gain > 0 ? 100 * t / gain : 0;
+      node._state = { regime: r, gain: gain, tax: t, eff: eff, taxes: taxes, saving: taxes[0] - taxes[taxes.length - 1] };
+      big.innerHTML = "<span class='fx-big-num'>£" + fmt(t, 2) + "m</span><span class='fx-big-unit'> tax on a £" + fmt(gain, 2) + "m gain: " + fmt(eff, 1) + "% overall</span>";
+      bars(bx, regs.map(function (R, i) { return { label: R.label, v: taxes[i], me: i === r }; }), Math.max.apply(null, taxes.concat([0.5])) * 1.05, function (v) { return "£" + fmt(v, 2) + "m"; });
+      var d = taxes[0] - taxes[taxes.length - 1];
+      out.innerHTML = "Difference between the two rule books at this gain: <strong>£" + fmt(Math.abs(d), 2) + "m</strong>" + (d >= 0 ? " less tax under the new rules." : " more tax under the new rules.");
+      if (node._autoCheck) node._autoCheck();
+    }
+    toggles(body, regs.map(function (R) { return R.label; }), function (i) { r = i; draw(); });
+    slider(body, "Lifetime gain from selling shares", 0.25, 30, 0.25, gain, function (v) { gain = v; draw(); }, function (v) { return "£" + fmt(v, 2) + "m"; });
+  };
+
+  /* growth: exponential v subexponential running time, on a log scale.
+     Steps: brute force 2^n; best known 3-SAT about 1.307^n; illustrative subexponential 2^(c·n/log2 n). */
+  FIGS.growth = function (node, cfg) {
+    var body = frame(node, cfg.title || "Exponential or not?", cfg.note);
+    var c = cfg.c || 10, base = cfg.base || 1.307, logn = cfg.logn || 2;
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var n = Math.pow(10, logn), l2 = Math.log(n) / Math.LN2;
+      var dBrute = n * Math.LOG10E * Math.LN2, dBest = n * Math.log10(base), dSub = c * n / l2 * Math.LOG10E * Math.LN2;
+      var subWins = dSub < dBest;
+      node._state = { logn: logn, n: n, subWins: subWins, dBest: dBest, dSub: dSub };
+      big.innerHTML = "<span class='fx-big-num'>n = " + (n < 1e6 ? fmt(n) : n.toExponential(1).replace("e+", " × 10^")) + "</span><span class='fx-big-unit'> variables · " + (subWins ? "the subexponential method is faster" : "the exponential method is still faster") + "</span>";
+      var max = Math.max(dBrute, dBest, dSub);
+      bars(bx, [{ label: "Try every assignment (2^n)", v: dBrute }, { label: "Best known for 3-SAT (about 1.307^n)", v: dBest }, { label: "Illustrative subexponential", v: dSub, me: true }], max, function (v) { return v < 1e6 ? fmt(v, 0) + " digits" : v.toExponential(1).replace("e+", "×10^") + " digits"; });
+      out.innerHTML = "Bars show how many digits the number of steps has, so each extra digit means ten times more work. Exponential cost grows in proportion to n; subexponential cost grows a little more slowly than n.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    slider(body, "Number of variables (log scale)", 1, 12, 0.1, logn, function (v) { logn = v; draw(); }, function (v) { var n = Math.pow(10, v); return n < 1e6 ? fmt(n) : "10^" + fmt(v, 1); });
+  };
+
+  /* onboard: what reaches the ground when power limits onboard computing and the link limits downlink.
+     cfg: {rawGB, linkGB, gbPerMin, minPerKw, keep, kw, ratio} — illustrative */
+  FIGS.onboard = function (node, cfg) {
+    var body = frame(node, cfg.title || "Process in orbit, or send it down?", cfg.note);
+    var raw = cfg.rawGB || 400, link = cfg.linkGB || 60, rate = cfg.gbPerMin || 0.5, mpk = cfg.minPerKw || 80, keep = cfg.keep || 0.02;
+    var kw = cfg.kw || 1, ratio = cfg.ratio || 2;
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var mins = kw * mpk, processed = Math.min(raw, mins * rate), rest = raw - processed;
+      var need = processed * keep + rest / ratio, share = Math.min(1, link / need);
+      node._state = { kw: kw, ratio: ratio, share: share, processed: processed, need: need };
+      big.innerHTML = "<span class='fx-big-num'>" + fmt(100 * share) + "%</span><span class='fx-big-unit'> of each day's data reaches the ground, as results or as compressed pixels</span>";
+      bars(bx, [{ label: "Collected a day", v: raw }, { label: "Processed on board (power-limited)", v: processed }, { label: "To send down", v: need, me: true }, { label: "Downlink capacity a day", v: link }], Math.max(raw, need, link), function (v) { return fmt(v, 0) + " GB"; });
+      out.innerHTML = "Onboard computing a day: <strong>" + fmt(mins) + " minutes</strong> from " + fmt(kw, 1) + " kW of spare power. " + (share >= 1 ? "Everything gets down." : "<strong>" + fmt(need - link) + " GB a day</strong> stays on board or is never collected.");
+      if (node._autoCheck) node._autoCheck();
+    }
+    slider(body, "Spare solar power for computing", 0, 4, 0.25, kw, function (v) { kw = v; draw(); }, function (v) { return fmt(v, 2) + " kW"; });
+    slider(body, "Compression ratio on raw data", 1, 12, 0.5, ratio, function (v) { ratio = v; draw(); }, function (v) { return fmt(v, 1) + " : 1"; });
+  };
+
+  /* condorcet: three voters, three options; pairwise majorities can form a cycle.
+     The six rankings sit on a hexagon: neighbours differ by one swap of adjacent options. */
+  FIGS.condorcet = function (node, cfg) {
+    var body = frame(node, cfg.title || "Can the majority make up its mind?", cfg.note);
+    var R = ["ABC", "BAC", "BCA", "CBA", "CAB", "ACB"];
+    var start = cfg.voters || ["ABC", "BCA", "CAB"], v = start.slice();
+    var big = el("div", { class: "fx-big" }, body);
+    var s = svg("svg", { viewBox: "0 0 400 205", class: "fx-svg", role: "img", "aria-label": "Six rankings on a hexagon and the majority between each pair" }, body);
+    var mid = "cdm" + Math.floor(Math.random() * 1e6); marker(s, mid, "vz-arrowhead");
+    var out = el("p", { class: "fx-readout" }, body);
+    var ctr = el("div", { class: "fx-toggles" }, body);
+    var pos = R.map(function (r, i) { var a = Math.PI / 2 + i * Math.PI / 3; return [110 + 68 * Math.cos(a), 95 - 68 * Math.sin(a)]; });
+    var tri = { A: [290, 40], B: [235, 160], C: [345, 160] };
+    function beats(x, y) { var n = 0; v.forEach(function (r) { if (r.indexOf(x) < r.indexOf(y)) n++; }); return n >= 2; }
+    function draw() {
+      while (s.childNodes.length > 1) s.removeChild(s.lastChild);
+      for (var i = 0; i < 6; i++) { var p = pos[i], q = pos[(i + 1) % 6]; svg("line", { x1: p[0], y1: p[1], x2: q[0], y2: q[1], class: "fx-axis-line" }, s); }
+      R.forEach(function (r, i) {
+        var n = v.filter(function (x) { return x === r; }).length;
+        svg("circle", { cx: pos[i][0], cy: pos[i][1], r: n ? 21 : 18, class: "vz-node " + (n ? "accent" : "plain") }, s);
+        svgText(s, pos[i][0], pos[i][1] + 3.5, [r.split("").join(">")], "vz-node-text", "middle");
+        if (n) svgText(s, pos[i][0], pos[i][1] + 33, [n + (n > 1 ? " voters" : " voter")], "fx-svg-small", "middle");
+      });
+      var pairs = [["A", "B"], ["B", "C"], ["A", "C"]], wins = { A: 0, B: 0, C: 0 };
+      pairs.forEach(function (pr) {
+        var w = beats(pr[0], pr[1]) ? pr[0] : pr[1], l = w === pr[0] ? pr[1] : pr[0]; wins[w]++;
+        var a = tri[w], b = tri[l], dx = b[0] - a[0], dy = b[1] - a[1], d = Math.sqrt(dx * dx + dy * dy), k = 16 / d;
+        svg("path", { d: "M" + (a[0] + dx * k) + "," + (a[1] + dy * k) + " L" + (b[0] - dx * k) + "," + (b[1] - dy * k), class: "vz-edge", "marker-end": "url(#" + mid + ")" }, s);
+      });
+      ["A", "B", "C"].forEach(function (o) { svg("circle", { cx: tri[o][0], cy: tri[o][1], r: 13, class: "vz-node " + (wins[o] === 2 ? "good" : "plain") }, s); svgText(s, tri[o][0], tri[o][1] + 4, [o], "vz-node-text", "middle"); });
+      svgText(s, 290, 195, ["arrow: the majority prefers"], "fx-svg-small", "middle");
+      var winner = ["A", "B", "C"].filter(function (o) { return wins[o] === 2; })[0] || null;
+      var changed = v.filter(function (x, i) { return x !== start[i]; }).length;
+      node._state = { cycle: !winner, winner: winner, changed: changed, voters: v.slice() };
+      big.innerHTML = winner ? "<span class='fx-big-num'>" + winner + " wins</span><span class='fx-big-unit'> it beats both rivals head to head</span>" : "<span class='fx-big-num'>A cycle</span><span class='fx-big-unit'> every option loses to another one</span>";
+      out.innerHTML = "Voters: " + v.map(function (r, i) { return "<strong>" + (i + 1) + "</strong> " + r.split("").join(" > "); }).join(" · ") + ". Click a voter to move them one step round the hexagon (one swap of neighbours).";
+      if (node._autoCheck) node._autoCheck();
+    }
+    [0, 1, 2].forEach(function (i) {
+      var b = el("button", { type: "button", class: "fx-tog" }, ctr, "Voter " + (i + 1) + " →");
+      b.addEventListener("click", function () { v[i] = R[(R.indexOf(v[i]) + 1) % 6]; draw(); });
+      var b2 = el("button", { type: "button", class: "fx-tog" }, ctr, "← " + (i + 1));
+      b2.addEventListener("click", function () { v[i] = R[(R.indexOf(v[i]) + 5) % 6]; draw(); });
+    });
+    var rs = el("button", { type: "button", class: "fx-tog" }, ctr, "Reset");
+    rs.addEventListener("click", function () { v = start.slice(); draw(); });
+    draw();
+  };
+
   /* ---------- problems: one per figure ---------- */
   var solvedCount = 0, problemCount = 0, badge = null;
   function updateBadge() {
@@ -1013,7 +1179,13 @@
     launchBelow: function (st, p) { return st && st.cost <= p.max; },
     rupiahHolds: function (st, p) { return st && st.doubt && st.steady && st.rate <= p.maxRate + 1e-6; },
     bothFears: function (st, p) { return st && st.fall >= p.minFall && st.yield >= p.minYield - 1e-9; },
-    majorityNoArab: function (st) { return st && st.seats >= 61 && st.lead && !st.arab; }
+    majorityNoArab: function (st) { return st && st.seats >= 61 && st.lead && !st.arab; },
+    cashBack: function (st, p) { return st && st.firm === p.firm && st.fcf >= 0 && st.chg >= p.minChg; },
+    swingOnly: function (st, p) { return st && st.moved.length === 1 && st.moved[0] === p.group && Math.abs(st.total - p.target) <= p.tol + 1e-9; },
+    gainAbove: function (st, p) { return st && st.gain >= p.min && st.gain <= p.max && Math.abs(st.saving - p.saving) <= p.tol; },
+    subFirst: function (st, p) { return st && st.subWins && st.logn <= p.maxLog + 1e-9; },
+    allDown: function (st, p) { return st && st.share >= 1 && st.ratio <= p.maxRatio + 1e-9 && st.kw <= p.maxKw + 1e-9; },
+    oneSwapWinner: function (st) { return st && st.winner && st.changed === 1; }
   };
   function problem(node, p) {
     problemCount++;
