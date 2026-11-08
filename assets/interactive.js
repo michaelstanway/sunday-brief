@@ -1154,6 +1154,147 @@
     draw();
   };
 
+
+  /* ---------- 8 Nov 2026 figures ---------- */
+
+  /* seatcurve: how a national vote lead turns into House seats.
+     Seat share s = v^k / (v^k + (1 − v)^k), v = two-party vote share. k = 3 is the old "cube law". Illustrative. */
+  FIGS.seatcurve = function (node, cfg) {
+    var body = frame(node, cfg.title || "From votes to seats", cfg.note);
+    var total = cfg.seats || 435, need = Math.floor(total / 2) + 1, m = cfg.margin || 0, k = cfg.k || 3;
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var v = 0.5 + m / 200, a = Math.pow(v, k), b = Math.pow(1 - v, k), share = a / (a + b), d = Math.round(total * share);
+      node._state = { margin: m, k: k, seats: d };
+      big.innerHTML = "<span class='fx-big-num'>" + d + " seats</span><span class='fx-big-unit'> for the party ahead by " + (m > 0 ? "+" : "") + m + " points (" + need + " is a majority)</span>";
+      bars(bx, [{ label: "Party A seats", v: d, me: true }, { label: "Party B seats", v: total - d }, { label: "Needed for a majority", v: need }], total, function (x) { return fmt(x); });
+      out.innerHTML = "A two-party vote share of <strong>" + fmt(100 * v, 1) + "%</strong> becomes <strong>" + fmt(100 * share, 1) + "%</strong> of seats. The higher the responsiveness, the more a lead in votes is magnified into seats.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    slider(body, "National vote margin, Party A minus Party B", -20, 20, 1, m, function (x) { m = x; draw(); }, function (x) { return (x > 0 ? "+" : "") + x + " pts"; });
+    slider(body, "Responsiveness of seats to votes (k)", 1, 3, 0.05, k, function (x) { k = x; draw(); }, function (x) { return fmt(x, 2); });
+  };
+
+  /* delay: what a delay to all future profits does to a share price today.
+     Value factor = (1 − cancelled share) / (1 + r)^delay. Illustrative. cfg.falls: [{name, v}] actual one-day falls (%) */
+  FIGS.delay = function (node, cfg) {
+    var body = frame(node, cfg.title || "Delayed, not cancelled", cfg.note);
+    var d = cfg.delay || 0, r = cfg.rate || 10, c = cfg.cancel || 0, falls = cfg.falls || [];
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var f = 100 * (1 - (1 - c / 100) / Math.pow(1 + r / 100, d));
+      node._state = { delay: d, rate: r, cancel: c, fall: f };
+      big.innerHTML = "<span class='fx-big-num'>−" + fmt(f, 1) + "%</span><span class='fx-big-unit'> fall in what the profits are worth today</span>";
+      var rows = [{ label: "Your scenario", v: f, me: true }].concat(falls.map(function (x) { return { label: x.name, v: x.v }; }));
+      bars(bx, rows, 30, function (x) { return "−" + fmt(x, 1) + "%"; });
+      out.innerHTML = "Every future profit arrives <strong>" + fmt(d, 2) + " years later</strong>" + (c > 0 ? ", and <strong>" + c + "%</strong> of it never arrives" : "") + ". Investors who want a " + fmt(r, 1) + "% return a year pay less today for money that comes later.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    slider(body, "Delay to every future profit", 0, 3, 0.25, d, function (x) { d = x; draw(); }, function (x) { return fmt(x, 2) + " yrs"; });
+    slider(body, "Return investors require a year", 6, 14, 0.5, r, function (x) { r = x; draw(); }, function (x) { return fmt(x, 1) + "%"; });
+    slider(body, "Share of future profit lost for good", 0, 50, 5, c, function (x) { c = x; draw(); }, function (x) { return x + "%"; });
+  };
+
+  /* oddsprice: a price as a probability-weighted average of two outcomes. Illustrative. */
+  FIGS.oddsprice = function (node, cfg) {
+    var body = frame(node, cfg.title || "What is the market betting on?", cfg.note);
+    var p = cfg.p || 50, deal = cfg.deal || 85, war = cfg.war || 118, now = cfg.now || 98;
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var e = p / 100 * deal + (1 - p / 100) * war;
+      node._state = { p: p, deal: deal, price: e, gap: e - now };
+      big.innerHTML = "<span class='fx-big-num'>$" + fmt(e, 1) + "</span><span class='fx-big-unit'> a barrel: the price these odds imply</span>";
+      bars(bx, [{ label: "If talks fail (October's peak)", v: war }, { label: "Price these odds imply", v: e, me: true }, { label: "Brent, Friday's close", v: now }, { label: "If a deal is done", v: deal }], 130, function (x) { return "$" + fmt(x, 1); });
+      out.innerHTML = "Each point of probability is worth <strong>$" + fmt((war - deal) / 100, 2) + "</strong> a barrel here. A headline that shifts the odds by 10 points moves the price about <strong>$" + fmt((war - deal) / 10, 1) + "</strong>.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    slider(body, "Chance of a US–Iran deal", 0, 100, 1, p, function (x) { p = x; draw(); }, function (x) { return x + "%"; });
+    slider(body, "Brent if a deal is done", 65, 105, 1, deal, function (x) { deal = x; draw(); }, function (x) { return "$" + x; });
+  };
+
+  /* contact: how long an image waits for a way down. Wait ≈ half the gap between ground contacts,
+     gap = 1440 / (stations × contacts per station per day). A relay gives a near-continuous link. Illustrative. */
+  FIGS.contact = function (node, cfg) {
+    var body = frame(node, cfg.title || "How long does a picture wait?", cfg.note);
+    var n = cfg.stations || 3, per = cfg.perDay || 4, proc = cfg.proc || 5, relay = false, rw = cfg.relayWait || 3;
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var gap = 1440 / (n * per), wait = relay ? rw : gap / 2, total = wait + proc;
+      node._state = { stations: n, relay: relay, proc: proc, wait: wait, total: total };
+      big.innerHTML = "<span class='fx-big-num'>" + fmt(total) + " min</span><span class='fx-big-unit'> on average from image taken to image delivered</span>";
+      bars(bx, [{ label: "Waiting for a way down", v: wait, me: true }, { label: "Downlink and processing", v: proc }, { label: "Total", v: total }], Math.max(60, total), function (x) { return fmt(x) + " min"; });
+      out.innerHTML = relay ? "The relay satellite is almost always in view, so the wait no longer depends on ground stations." : "With " + n + " station" + (n > 1 ? "s" : "") + ", a pass comes about every <strong>" + fmt(gap) + " minutes</strong>. A picture taken at a random moment waits half of that, on average.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    toggles(body, ["Ground stations only", "Relay through a higher satellite"], function (i) { relay = i === 1; draw(); });
+    slider(body, "Ground stations in the network", 1, 40, 1, n, function (x) { n = x; draw(); }, function (x) { return x; });
+    slider(body, "Minutes to downlink and process", 1, 30, 1, proc, function (x) { proc = x; draw(); }, function (x) { return x + " min"; });
+  };
+
+  /* surrogate: a drug cuts a marker; how much does it cut heart attacks?
+     Expected hazard ratio ≈ 1 − cut × share of risk through the marker × share of that risk still reversible. Illustrative. */
+  FIGS.surrogate = function (node, cfg) {
+    var body = frame(node, cfg.title || "The marker fell. Why didn't the risk?", cfg.note);
+    var trials = cfg.trials, t = 0, s = cfg.share || 20, rv = cfg.rev || 100;
+    var big = el("div", { class: "fx-big" }, body);
+    var bx = el("div", { class: "fx-bars" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function draw() {
+      var T = trials[t], hr = 1 - (T.cut / 100) * (s / 100) * (rv / 100), inside = hr >= T.lo && hr <= T.hi;
+      node._state = { trial: t, share: s, rev: rv, hr: hr, inside: inside };
+      big.innerHTML = "<span class='fx-big-num'>" + fmt(hr, 2) + "</span><span class='fx-big-unit'> expected hazard ratio · trial found " + fmt(T.hr, 2) + " (" + fmt(T.lo, 2) + "–" + fmt(T.hi, 2) + ")</span>";
+      bars(bx, [{ label: T.marker + " cut by the drug", v: T.cut }, { label: "Expected cut in heart attacks and strokes", v: 100 * (1 - hr), me: true }, { label: "Largest cut the trial allows", v: Math.max(0, 100 * (1 - T.lo)) }], 100, function (x) { return fmt(x) + "%"; });
+      out.innerHTML = inside ? "<strong>This fits the trial.</strong> The expected effect lies inside its 95% confidence range." : "<strong>This does not fit.</strong> The trial would have seen a clear benefit.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    toggles(body, trials.map(function (x) { return x.name; }), function (i) { t = i; draw(); });
+    slider(body, "Share of risk that runs through the marker", 0, 60, 5, s, function (x) { s = x; draw(); }, function (x) { return x + "%"; });
+    slider(body, "Share of that risk a late cut can still undo", 0, 100, 5, rv, function (x) { rv = x; draw(); }, function (x) { return x + "%"; });
+  };
+
+  /* pbr: the Pusey–Barrett–Rudolph argument as a game. Each system's hidden state is compatible with |0>, |+> or both.
+     Outcome i never occurs for joint preparation i. An outcome is possible only if no compatible preparation forbids it. */
+  FIGS.pbr = function (node, cfg) {
+    var body = frame(node, cfg.title || "Is the wave function real? The PBR game", cfg.note);
+    var opts = ["only |0⟩", "only |+⟩", "both (overlap)"], a = 0, b = 1;
+    var preps = ["|0⟩|0⟩", "|0⟩|+⟩", "|+⟩|0⟩", "|+⟩|+⟩"];
+    var big = el("div", { class: "fx-big" }, body);
+    var s = svg("svg", { viewBox: "0 0 400 120", class: "fx-svg", role: "img", "aria-label": "Four measurement outcomes, each ruled out by one preparation" }, body);
+    var out = el("p", { class: "fx-readout" }, body);
+    function compat(x) { return x === 0 ? ["0"] : x === 1 ? ["+"] : ["0", "+"]; }
+    function draw() {
+      while (s.firstChild) s.removeChild(s.firstChild);
+      var ok = {};
+      compat(a).forEach(function (p) { compat(b).forEach(function (q) { ok["|" + p + "⟩|" + q + "⟩"] = true; }); });
+      var allowed = 0;
+      preps.forEach(function (p, i) {
+        var bad = !!ok[p], x = 50 + i * 100;
+        if (!bad) allowed++;
+        svg("rect", { x: x - 42, y: 20, width: 84, height: 44, rx: 6, class: "vz-node " + (bad ? "bad" : "good") }, s);
+        svgText(s, x, 38, ["Outcome " + (i + 1)], "vz-node-text", "middle");
+        svgText(s, x, 54, [bad ? "impossible" : "possible"], "vz-node-text" + (bad ? " bad" : ""), "middle");
+        svgText(s, x, 84, ["never for"], "fx-svg-small", "middle");
+        svgText(s, x, 98, [p], "fx-svg-small", "middle");
+      });
+      node._state = { a: a, b: b, allowed: allowed };
+      big.innerHTML = allowed ? "<span class='fx-big-num'>" + allowed + " outcome" + (allowed > 1 ? "s" : "") + " possible</span><span class='fx-big-unit'> no contradiction</span>" : "<span class='fx-big-num'>Contradiction</span><span class='fx-big-unit'> every outcome is ruled out, yet the measurement must give one</span>";
+      out.innerHTML = "Hidden state is compatible with: system 1, <strong>" + opts[a] + "</strong>; system 2, <strong>" + opts[b] + "</strong>. Red boxes are ruled out by a preparation this hidden state could have come from.";
+      if (node._autoCheck) node._autoCheck();
+    }
+    el("p", { class: "fx-q" }, body, "System 1's hidden state:");
+    toggles(body, opts, function (i) { a = i; draw(); }, 0);
+    el("p", { class: "fx-q" }, body, "System 2's hidden state:");
+    toggles(body, opts, function (i) { b = i; draw(); }, 1);
+  };
+
   /* ---------- problems: one per figure ---------- */
   var solvedCount = 0, problemCount = 0, badge = null;
   function updateBadge() {
@@ -1185,7 +1326,12 @@
     gainAbove: function (st, p) { return st && st.gain >= p.min && st.gain <= p.max && Math.abs(st.saving - p.saving) <= p.tol; },
     subFirst: function (st, p) { return st && st.subWins && st.logn <= p.maxLog + 1e-9; },
     allDown: function (st, p) { return st && st.share >= 1 && st.ratio <= p.maxRatio + 1e-9 && st.kw <= p.maxKw + 1e-9; },
-    oneSwapWinner: function (st) { return st && st.winner && st.changed === 1; }
+    oneSwapWinner: function (st) { return st && st.winner && st.changed === 1; },
+    seatsNear: function (st, p) { return st && st.margin === p.margin && Math.abs(st.seats - p.seats) <= p.tol; },
+    fallNear: function (st, p) { return st && st.cancel === 0 && Math.abs(st.rate - p.rate) < 1e-9 && Math.abs(st.fall - p.fall) <= p.tol; },
+    impliedOdds: function (st, p) { return st && st.deal === p.deal && Math.abs(st.gap) <= p.tol; },
+    latencyUnder: function (st, p) { return st && !st.relay && st.proc === p.proc && st.total <= p.max + 1e-9 && st.stations <= p.maxStations; },
+    fitsDespite: function (st, p) { return st && st.trial === p.trial && st.share >= p.minShare && st.inside; }
   };
   function problem(node, p) {
     problemCount++;
